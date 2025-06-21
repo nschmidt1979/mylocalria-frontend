@@ -1,0 +1,151 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             resource != null && 
+             resource.data.get('userType', '') == 'admin';
+    }
+    
+    function isValidUser() {
+      return isAuthenticated() && 
+             request.auth.token.email_verified == true;
+    }
+
+    // Users collection - profile data
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && 
+                      isValidUser() && 
+                      validateUserData();
+      allow update: if isOwner(userId) && 
+                      isValidUser() && 
+                      validateUserData();
+      allow delete: if isOwner(userId) || isAdmin();
+      
+      function validateUserData() {
+        let requiredFields = ['email', 'createdAt', 'updatedAt'];
+        return request.resource.data.keys().hasAll(requiredFields) &&
+               request.resource.data.email == request.auth.token.email;
+      }
+    }
+
+    // Advisor data - publicly readable, admin-only write
+    match /state_adv_part_1_data/{advisorId} {
+      allow read: if true; // Public read access for directory
+      allow write: if isAdmin();
+    }
+
+    // ADV Part 2 data - publicly readable, admin-only write
+    match /adv_part_2_data/{advisorId} {
+      allow read: if true; // Public read access
+      allow write: if isAdmin();
+    }
+
+    // ADV Part 2B data - publicly readable, admin-only write
+    match /adv_part_2b_data/{advisorId} {
+      allow read: if true; // Public read access
+      allow write: if isAdmin();
+    }
+
+    // Advisor logos - publicly readable, admin-only write
+    match /adviser_logos/{logoId} {
+      allow read: if true; // Public read access
+      allow write: if isAdmin();
+    }
+
+    // Reviews - authenticated users can read all, write their own
+    match /reviews/{reviewId} {
+      allow read: if true; // Public read access
+      allow create: if isValidUser() && 
+                      isOwner(request.resource.data.reviewerId) && 
+                      validateReviewData();
+      allow update: if isValidUser() && 
+                      isOwner(resource.data.reviewerId) && 
+                      validateReviewData();
+      allow delete: if isValidUser() && 
+                      (isOwner(resource.data.reviewerId) || isAdmin());
+      
+      function validateReviewData() {
+        let requiredFields = ['advisorId', 'reviewerId', 'rating', 'createdAt'];
+        return request.resource.data.keys().hasAll(requiredFields) &&
+               request.resource.data.rating is int &&
+               request.resource.data.rating >= 1 &&
+               request.resource.data.rating <= 5;
+      }
+    }
+
+    // Search notifications - users can only access their own
+    match /searchNotifications/{notificationId} {
+      allow read, write: if isValidUser() && 
+                           isOwner(resource.data.userId);
+      allow create: if isValidUser() && 
+                      isOwner(request.resource.data.userId);
+    }
+
+    // Saved searches - users can only access their own
+    match /savedSearches/{searchId} {
+      allow read, write: if isValidUser() && 
+                           isOwner(resource.data.userId);
+      allow create: if isValidUser() && 
+                      isOwner(request.resource.data.userId) && 
+                      validateSavedSearchData();
+      
+      function validateSavedSearchData() {
+        let requiredFields = ['userId', 'name', 'createdAt'];
+        return request.resource.data.keys().hasAll(requiredFields);
+      }
+    }
+
+    // Search feedback - authenticated users can create, admins can read all
+    match /searchFeedback/{feedbackId} {
+      allow read: if isAdmin();
+      allow create: if isValidUser() && validateFeedbackData();
+      
+      function validateFeedbackData() {
+        let requiredFields = ['feedback', 'createdAt'];
+        return request.resource.data.keys().hasAll(requiredFields);
+      }
+    }
+
+    // Search history - users can only access their own
+    match /searchHistory/{historyId} {
+      allow read, write: if isValidUser() && 
+                           isOwner(resource.data.userId);
+      allow create: if isValidUser() && 
+                      isOwner(request.resource.data.userId);
+    }
+
+    // Notifications - users can only access their own
+    match /notifications/{notificationId} {
+      allow read: if isValidUser() && 
+                    isOwner(resource.data.userId);
+      allow write: if isAdmin(); // Only admins can create notifications
+    }
+
+    // General collections that might be publicly readable
+    match /locations/{locationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /specializations/{specializationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Deny all other requests
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo 'No tests configured yet'",
+    "test:unit": "echo 'Unit tests will be configured here'",
+    "test:integration": "echo 'Integration tests will be configured here'",
+    "test:e2e": "echo 'E2E tests will be configured here'"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
