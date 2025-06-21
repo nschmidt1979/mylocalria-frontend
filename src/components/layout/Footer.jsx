@@ -13,23 +13,23 @@ const Footer = () => {
             <p className="mt-4 text-sm text-gray-300">
               Helping Washington investors find and evaluate local registered investment advisers since 2023.
             </p>
-            <div className="mt-4 flex space-x-6" role="list" aria-label="Social media links">
+            <div className="mt-4 flex space-x-6" aria-label="Social media links">
               <a 
-                href="#" 
+                href="https://twitter.com/mylocalria" 
                 className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 rounded-md p-1"
                 aria-label="Follow us on Twitter"
               >
                 <i className="fab fa-twitter" aria-hidden="true"></i>
               </a>
               <a 
-                href="#" 
+                href="https://linkedin.com/company/mylocalria" 
                 className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 rounded-md p-1"
                 aria-label="Follow us on LinkedIn"
               >
                 <i className="fab fa-linkedin" aria-hidden="true"></i>
               </a>
               <a 
-                href="#" 
+                href="https://facebook.com/mylocalria" 
                 className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 rounded-md p-1"
                 aria-label="Follow us on Facebook"
               >
@@ -39,7 +39,7 @@ const Footer = () => {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-100 tracking-wider uppercase">Resources</h3>
-            <ul className="mt-4 space-y-2" role="list">
+            <ul className="mt-4 space-y-2">
               <li>
                 <Link 
                   to="/ria-101" 
@@ -76,7 +76,7 @@ const Footer = () => {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-100 tracking-wider uppercase">Company</h3>
-            <ul className="mt-4 space-y-2" role="list">
+            <ul className="mt-4 space-y-2">
               <li>
                 <Link 
                   to="/about" 
@@ -113,7 +113,7 @@ const Footer = () => {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-100 tracking-wider uppercase">Legal</h3>
-            <ul className="mt-4 space-y-2" role="list">
+            <ul className="mt-4 space-y-2">
               <li>
                 <Link 
                   to="/privacy" 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const AdvisorCard = ({ advisor }) => (
-  <article className="p-4 bg-white rounded shadow" role="article" aria-labelledby={`advisor-${advisor.id}-name`}>
+  <article className="p-4 bg-white rounded shadow" aria-labelledby={`advisor-${advisor.id}-name`}>
     <header>
       <h3 id={`advisor-${advisor.id}-name`} className="text-lg font-bold text-gray-900 mb-2">
         {advisor.primary_business_name}
