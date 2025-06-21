@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const StarRating = ({ rating = 0, outOf = 5, className = '', size = 8 }) => {
   const stars = [];

@@ -25,7 +25,7 @@ const certifications = [
   'CRPC',
 ];
 
-export const SearchFilters = ({ onSearch }) => {
+export const AdvancedSearchFilters = ({ onSearch }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);

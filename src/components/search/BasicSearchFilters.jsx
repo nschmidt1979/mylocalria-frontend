@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 
-const SearchFilters = ({ onFilterChange, initialFilters = {} }) => {
+const BasicSearchFilters = ({ onFilterChange, initialFilters = {} }) => {
   const [filters, setFilters] = useState({
     location: initialFilters.location || '',
     minRating: initialFilters.minRating || 0,
@@ -137,7 +137,7 @@ const SearchFilters = ({ onFilterChange, initialFilters = {} }) => {
   );
 };
 
-SearchFilters.propTypes = {
+BasicSearchFilters.propTypes = {
   onFilterChange: PropTypes.func.isRequired,
   initialFilters: PropTypes.shape({
     location: PropTypes.string,
@@ -147,4 +147,4 @@ SearchFilters.propTypes = {
   })
 };
 
-export default SearchFilters; 
+export default BasicSearchFilters;

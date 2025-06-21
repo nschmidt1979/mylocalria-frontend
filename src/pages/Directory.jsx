@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit, startAfter } from 'firebase/firestore';
-import { SearchFilters } from '../components/directory/SearchFilters';
+import { AdvancedSearchFilters } from '../components/directory/SearchFilters';
 import AdvisorCard from '../components/advisors/AdvisorCard';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { filterAdvisorsByDistance, getCurrentLocation, geocodeAddress } from '../services/geolocationService';
@@ -446,7 +446,7 @@ const Directory = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-80 space-y-6">
             <SearchTips />
-            <SearchFilters
+            <AdvancedSearchFilters
               filters={getCurrentFilters()}
               onFilterChange={(newFilters) => {
                 // Handle filter change

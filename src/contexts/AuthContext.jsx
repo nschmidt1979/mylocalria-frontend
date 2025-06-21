@@ -127,6 +127,7 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    currentUser: user, // Add backward compatibility for components expecting currentUser
     loading,
     register,
     login,

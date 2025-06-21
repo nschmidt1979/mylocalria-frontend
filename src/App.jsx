@@ -1,10 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AdminRoute } from './components/auth/AdminRoute';
 import RouteTransition from './components/common/RouteTransition';
-import PrivateRoute from './components/auth/PrivateRoute';
 
 // Pages
 import Landing from './pages/Landing';
@@ -19,6 +18,12 @@ import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 import AdvisorRegistration from './pages/AdvisorRegistration';
 import FirebaseAuthAction from './pages/FirebaseAuthAction';
+
+// Helper component to redirect from old advisor URL format to new one
+function AdvisorRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/advisor/${id}`} replace />;
+}
 
 function App() {
   return (
@@ -76,14 +81,14 @@ function App() {
                 <Route
                   path="/advisor-registration"
                   element={
-                    <PrivateRoute>
+                    <ProtectedRoute>
                       <AdvisorRegistration />
-                    </PrivateRoute>
+                    </ProtectedRoute>
                   }
                 />
 
-                {/* Advisor profile route */}
-                <Route path="/advisors/:id" element={<AdvisorProfile />} />
+                {/* Redirect old advisor profile route to new one */}
+                <Route path="/advisors/:id" element={<AdvisorRedirect />} />
 
                 {/* Fallback routes */}
                 <Route path="/404" element={<NotFound />} />
