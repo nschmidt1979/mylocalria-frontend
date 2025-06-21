@@ -79,7 +79,7 @@ export const Header = () => {
             {user ? (
               <>
                 <NotificationCenter />
-                <Menu as="div" className="relative">
+                <Menu as="div" data-cy="user-menu" className="relative">
                   <Menu.Button className="flex items-center text-gray-600 hover:text-gray-900">
                     <Cog6ToothIcon className="h-8 w-8" />
                   </Menu.Button>
@@ -109,6 +109,7 @@ export const Header = () => {
                         {({ active }) => (
                           <button
                             onClick={handleLogout}
+                            data-cy="logout-button"
                             className={`${
                               active ? 'bg-gray-100' : ''
                             } block w-full text-left px-4 py-2 text-sm text-gray-700`}
@@ -120,15 +121,23 @@ export const Header = () => {
                     </Menu.Items>
                   </Transition>
                 </Menu>
-                {/* Generic user avatar icon */}
-                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 border border-gray-300 ml-2">
-                  <UserCircleIcon className="h-7 w-7 text-gray-500" />
+                {/* User info display */}
+                <div className="flex items-center ml-2">
+                  {user?.displayName || user?.firstName ? (
+                    <span data-cy="user-name" className="text-sm text-gray-700 mr-2">
+                      {user.displayName || `${user.firstName} ${user.lastName}`}
+                    </span>
+                  ) : null}
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 border border-gray-300">
+                    <UserCircleIcon className="h-7 w-7 text-gray-500" />
+                  </div>
                 </div>
               </>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/login"
+                  data-cy="login-link"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                 >
                   Sign in

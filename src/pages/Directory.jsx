@@ -443,6 +443,52 @@ const Directory = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search Section */}
+        <div data-cy="search-section" className="bg-white rounded-lg shadow p-6 mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Find Financial Advisors</h1>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                data-cy="search-input"
+                type="text"
+                placeholder="Search advisors by name, company, or specialization..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <button
+              data-cy="search-button"
+              onClick={() => handleSearch(new URLSearchParams({ q: searchQuery }))}
+              className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              Search
+            </button>
+          </div>
+          
+          {/* Search Results Count */}
+          {advisors.length > 0 && (
+            <div data-cy="search-results-count" className="mt-4 text-sm text-gray-600">
+              Found {advisors.length} results
+              {searchQuery && (
+                <span data-cy="current-search-term"> for "{searchQuery}"</span>
+              )}
+            </div>
+          )}
+          
+          {/* No Results Message */}
+          {advisors.length === 0 && !loading && (
+            <div className="mt-4">
+              <div data-cy="no-results-message" className="text-gray-600">
+                No advisors found matching your criteria.
+              </div>
+              <div data-cy="search-suggestions" className="mt-2 text-sm text-gray-500">
+                Try adjusting your search terms or filters to find more results.
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-80 space-y-6">
             <SearchTips />
@@ -559,8 +605,12 @@ const Directory = () => {
               <SearchResultsSummary advisors={advisors} filters={getCurrentFilters()} />
             )}
 
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              <div data-cy="search-loading" className="flex justify-center py-8">
+                <LoadingSpinner size="lg" />
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div data-cy="search-results" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {advisors.map((advisor) => (
                   <AdvisorCard
                     key={advisor.id}

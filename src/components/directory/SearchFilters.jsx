@@ -113,7 +113,7 @@ export const SearchFilters = ({ onSearch }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
+    <div data-cy="search-filters" className="bg-white rounded-lg shadow-sm p-4">
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Search Query */}
@@ -145,6 +145,7 @@ export const SearchFilters = ({ onSearch }) => {
               <input
                 type="text"
                 id="location"
+                data-cy="location-filter"
                 value={locationInput}
                 onChange={(e) => {
                   setLocationInput(e.target.value);
@@ -192,6 +193,7 @@ export const SearchFilters = ({ onSearch }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700">Minimum Rating</label>
             <select
+              data-cy="rating-filter"
               value={filters.minRating}
               onChange={(e) => handleFilterChange('minRating', e.target.value)}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
@@ -206,7 +208,7 @@ export const SearchFilters = ({ onSearch }) => {
           {/* Specializations */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Specializations</label>
-            <div className="mt-1 max-h-32 overflow-y-auto">
+            <div data-cy="specialization-filter" className="mt-1 max-h-32 overflow-y-auto">
               {specializations.map((spec) => (
                 <div key={spec} className="flex items-center">
                   <input
@@ -280,6 +282,7 @@ export const SearchFilters = ({ onSearch }) => {
         <div className="mt-4 flex justify-end">
           <button
             type="button"
+            data-cy="clear-filters-button"
             onClick={clearFilters}
             className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >

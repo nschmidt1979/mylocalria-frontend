@@ -40,7 +40,7 @@ const Login = () => {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link to="/register" data-cy="register-link" className="font-medium text-blue-600 hover:text-blue-500">
             create a new account
           </Link>
         </p>
@@ -49,7 +49,7 @@ const Login = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+            <div data-cy="auth-error" className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
               {error}
             </div>
           )}
@@ -59,7 +59,7 @@ const Login = () => {
             </div>
           )}
           {!showReset ? (
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form data-cy="login-form" className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email address
@@ -69,6 +69,7 @@ const Login = () => {
                     id="email"
                     name="email"
                     type="email"
+                    data-cy="email-input"
                     autoComplete="email"
                     required
                     value={email}
@@ -87,6 +88,7 @@ const Login = () => {
                     id="password"
                     name="password"
                     type="password"
+                    data-cy="password-input"
                     autoComplete="current-password"
                     required
                     value={password}
@@ -99,6 +101,7 @@ const Login = () => {
               <div className="flex items-center justify-between">
                 <button
                   type="button"
+                  data-cy="forgot-password-link"
                   className="text-sm text-blue-600 hover:text-blue-500 focus:outline-none"
                   onClick={() => {
                     setShowReset(true);
@@ -113,6 +116,7 @@ const Login = () => {
               <div>
                 <button
                   type="submit"
+                  data-cy="login-button"
                   disabled={loading}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

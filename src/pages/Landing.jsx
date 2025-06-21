@@ -41,7 +41,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+      <div data-cy="hero-section" className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
@@ -50,9 +50,10 @@ const Landing = () => {
             <p className="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
               Connect with trusted, fiduciary financial advisors in your area. Read reviews, compare services, and make an informed decision.
             </p>
-            <div className="mt-10 flex justify-center">
+            <div data-cy="search-cta" className="mt-10 flex justify-center">
               <Link
                 to="/directory"
+                data-cy="get-started-button"
                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-primary-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
               >
                 Find an Advisor
