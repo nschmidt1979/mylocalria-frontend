@@ -1,0 +1,17 @@
+{
+  "positiveReview": {
+    "rating": 5,
+    "title": "Outstanding financial guidance!",
+    "content": "John provided excellent financial advice and helped me create a comprehensive retirement plan. His expertise in investment strategies is top-notch, and he took the time to explain complex concepts in simple terms. I highly recommend his services to anyone looking for professional financial planning."
+  },
+  "neutralReview": {
+    "rating": 3,
+    "title": "Decent service",
+    "content": "The advisor was knowledgeable but the communication could have been better. The meetings were informative but sometimes felt rushed. Overall, an okay experience but there's room for improvement."
+  },
+  "detailedReview": {
+    "rating": 4,
+    "title": "Great advisor with solid expertise",
+    "content": "I've been working with this advisor for over a year now. They have helped me restructure my portfolio and provided valuable insights on tax-efficient investing. The advisor is responsive to questions and provides detailed explanations. My only minor complaint is that the initial consultation could have been more thorough in understanding my specific goals."
+  }
+}

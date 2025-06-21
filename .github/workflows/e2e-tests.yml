@@ -1,0 +1,204 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build application
+        run: npm run build
+        
+      - name: Run Cypress E2E tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run preview
+          wait-on: 'http://localhost:4173'
+          wait-on-timeout: 120
+          browser: ${{ matrix.browser }}
+          spec: e2e/specs/**/*.cy.js
+          config-file: cypress.config.js
+        env:
+          # Test user credentials (should be stored as GitHub secrets)
+          CYPRESS_TEST_USER_EMAIL: ${{ secrets.CYPRESS_TEST_USER_EMAIL || 'test@example.com' }}
+          CYPRESS_TEST_USER_PASSWORD: ${{ secrets.CYPRESS_TEST_USER_PASSWORD || 'testpassword123' }}
+          CYPRESS_TEST_ADVISOR_EMAIL: ${{ secrets.CYPRESS_TEST_ADVISOR_EMAIL || 'advisor@example.com' }}
+          CYPRESS_TEST_ADVISOR_PASSWORD: ${{ secrets.CYPRESS_TEST_ADVISOR_PASSWORD || 'advisorpassword123' }}
+          
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots-${{ matrix.browser }}
+          path: e2e/screenshots
+          retention-days: 7
+          
+      - name: Upload Cypress videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-videos-${{ matrix.browser }}
+          path: e2e/videos
+          retention-days: 7
+
+  # Parallel job for development environment testing
+  e2e-dev-environment:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    services:
+      # If you're using a database or other services for testing
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mylocalria_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Setup test database
+        run: |
+          # Add any database setup commands here
+          echo "Setting up test database..."
+        
+      - name: Start development server
+        run: npm run dev &
+        
+      - name: Wait for development server
+        run: npx wait-on http://localhost:5173 --timeout 60000
+        
+      - name: Run Cypress E2E tests (Development)
+        run: npm run test:e2e
+        env:
+          CYPRESS_baseUrl: http://localhost:5173
+          CYPRESS_TEST_USER_EMAIL: ${{ secrets.CYPRESS_TEST_USER_EMAIL || 'test@example.com' }}
+          CYPRESS_TEST_USER_PASSWORD: ${{ secrets.CYPRESS_TEST_USER_PASSWORD || 'testpassword123' }}
+          
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results-dev
+          path: |
+            e2e/screenshots
+            e2e/videos
+          retention-days: 7
+
+  # Job for generating test reports
+  test-report:
+    runs-on: ubuntu-latest
+    needs: [e2e-tests]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results
+          
+      - name: Generate test report
+        run: |
+          echo "# E2E Test Results" > test-report.md
+          echo "" >> test-report.md
+          echo "## Test Summary" >> test-report.md
+          echo "- Browser: Chrome, Firefox" >> test-report.md
+          echo "- Test Files: 3 (Advisor Search, Login & Review, Registration)" >> test-report.md
+          echo "" >> test-report.md
+          
+          if [ -d "test-results" ]; then
+            echo "## Artifacts Generated" >> test-report.md
+            find test-results -type f -name "*.png" | wc -l | xargs echo "- Screenshots:" >> test-report.md
+            find test-results -type f -name "*.mp4" | wc -l | xargs echo "- Videos:" >> test-report.md
+          fi
+          
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('test-report.md')) {
+              const report = fs.readFileSync('test-report.md', 'utf8');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+
+  # Optional: Deploy preview for manual testing
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build for preview
+        run: npm run build
+        
+      - name: Deploy to Netlify (Preview)
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        if: env.NETLIFY_AUTH_TOKEN != null

@@ -1,0 +1,35 @@
+{
+  "sampleAdvisor": {
+    "crdNumber": "123456",
+    "firstName": "John",
+    "lastName": "Smith",
+    "businessName": "Smith Financial Advisory",
+    "specialization": "Retirement Planning",
+    "city": "New York",
+    "state": "NY",
+    "rating": 4.5,
+    "reviewCount": 25
+  },
+  "newAdvisorRegistration": {
+    "crdNumber": "789012",
+    "businessName": "New Advisory Firm LLC",
+    "firstName": "Jane",
+    "lastName": "Advisor",
+    "phone": "555-987-6543",
+    "address": "456 Wall Street",
+    "city": "New York",
+    "state": "NY",
+    "zipCode": "10005",
+    "specialization": "Investment Management",
+    "yearsOfExperience": "8",
+    "bio": "Certified financial planner with expertise in investment management and tax planning.",
+    "credentials": ["CFP", "CFA"],
+    "services": ["Investment Management", "Tax Planning", "Estate Planning"],
+    "minimumInvestment": "100000"
+  },
+  "searchFilters": {
+    "location": "New York, NY",
+    "specialization": "Retirement Planning",
+    "minimumRating": "4.0"
+  }
+}
