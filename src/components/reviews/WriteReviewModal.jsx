@@ -1,7 +1,6 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,15 +10,44 @@ import StarRating from '../common/StarRating';
 export const WriteReviewModal = ({ advisorId, advisorName, onClose, onReviewSubmitted }) => {
   const { currentUser } = useAuth();
   const [rating, setRating] = useState(0);
-  const [hoveredRating, setHoveredRating] = useState(0);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const initialFocusRef = useRef(null);
+  const contentRef = useRef(null);
+
+  // Focus management
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscKey);
+    
+    // Focus the first interactive element when modal opens
+    setTimeout(() => {
+      initialFocusRef.current?.focus();
+    }, 100);
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!rating || !content.trim()) {
-      setError('Please provide both a rating and review content.');
+    
+    if (!rating) {
+      setError('Please provide a rating.');
+      initialFocusRef.current?.focus();
+      return;
+    }
+    
+    if (!content.trim()) {
+      setError('Please provide review content.');
+      contentRef.current?.focus();
       return;
     }
 
@@ -57,6 +85,11 @@ export const WriteReviewModal = ({ advisorId, advisorName, onClose, onReviewSubm
     }
   };
 
+  const handleRatingChange = (newRating) => {
+    setRating(newRating);
+    setError(null); // Clear error when user interacts
+  };
+
   return (
     <Transition.Root show={true} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -89,6 +122,7 @@ export const WriteReviewModal = ({ advisorId, advisorName, onClose, onReviewSubm
                     type="button"
                     className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     onClick={onClose}
+                    aria-label="Close modal"
                   >
                     <span className="sr-only">Close</span>
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -97,7 +131,7 @@ export const WriteReviewModal = ({ advisorId, advisorName, onClose, onReviewSubm
 
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                    <Dialog.Title as="h3" className="text-xl font-semibold leading-6 text-gray-900 mb-4">
+                    <Dialog.Title as="h2" className="text-xl font-semibold leading-6 text-gray-900 mb-4">
                       Write a Review for {advisorName}
                     </Dialog.Title>
 
@@ -105,46 +139,53 @@ export const WriteReviewModal = ({ advisorId, advisorName, onClose, onReviewSubm
                       {/* Rating Selection */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Your Rating
+                          Your Rating *
                         </label>
-                        <div className="flex items-center space-x-1">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <button
-                              key={i + 1}
-                              type="button"
-                              className="focus:outline-none"
-                              onMouseEnter={() => setHoveredRating(i + 1)}
-                              onMouseLeave={() => setHoveredRating(0)}
-                              onClick={() => setRating(i + 1)}
-                            >
-                              <StarRating rating={i + 1 <= (hoveredRating || rating) ? i + 1 : 0} size={8} />
-                            </button>
-                          ))}
-                          <span className="ml-2 text-sm text-gray-500">
-                            {rating ? `${rating} stars` : 'Select a rating'}
-                          </span>
-                        </div>
+                        <StarRating
+                          rating={rating}
+                          interactive={true}
+                          onChange={handleRatingChange}
+                          size={10}
+                          label="Rate this advisor from 1 to 5 stars"
+                          ref={initialFocusRef}
+                        />
+                        <p className="mt-1 text-sm text-gray-500">
+                          {rating > 0 ? `You rated ${rating} star${rating > 1 ? 's' : ''}` : 'Click to rate'}
+                        </p>
                       </div>
 
                       {/* Review Content */}
                       <div>
                         <label htmlFor="review-content" className="block text-sm font-medium text-gray-700 mb-2">
-                          Your Review
+                          Your Review *
                         </label>
                         <textarea
+                          ref={contentRef}
                           id="review-content"
                           rows={6}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                           placeholder="Share your experience with this advisor..."
                           value={content}
-                          onChange={(e) => setContent(e.target.value)}
+                          onChange={(e) => {
+                            setContent(e.target.value);
+                            setError(null); // Clear error when user types
+                          }}
                           required
+                          aria-describedby={error ? "review-error" : "review-help"}
                         />
+                        <p id="review-help" className="mt-1 text-sm text-gray-500">
+                          Please provide honest feedback about your experience with this advisor.
+                        </p>
                       </div>
 
                       {/* Error Message */}
                       {error && (
-                        <div className="rounded-md bg-red-50 p-4">
+                        <div 
+                          id="review-error" 
+                          className="rounded-md bg-red-50 p-4 border border-red-200" 
+                          role="alert"
+                          aria-live="polite"
+                        >
                           <div className="flex">
                             <div className="ml-3">
                               <h3 className="text-sm font-medium text-red-800">
@@ -160,12 +201,12 @@ export const WriteReviewModal = ({ advisorId, advisorName, onClose, onReviewSubm
                         <button
                           type="submit"
                           disabled={loading}
-                          className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex w-full justify-center rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {loading ? (
                             <>
-                              <LoadingSpinner className="h-5 w-5 mr-2" />
-                              Submitting...
+                              <LoadingSpinner size="sm" message="Submitting review" />
+                              <span className="ml-2">Submitting...</span>
                             </>
                           ) : (
                             'Submit Review'
@@ -173,7 +214,7 @@ export const WriteReviewModal = ({ advisorId, advisorName, onClose, onReviewSubm
                         </button>
                         <button
                           type="button"
-                          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:w-auto"
                           onClick={onClose}
                         >
                           Cancel

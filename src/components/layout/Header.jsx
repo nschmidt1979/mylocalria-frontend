@@ -40,11 +40,11 @@ export const Header = () => {
 
   return (
     <header className="bg-white shadow-sm">
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex h-16 justify-between items-center">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center" aria-label="MyLocalRIA home">
               <span className="text-2xl font-bold text-blue-600">MyLocalRIA</span>
             </Link>
           </div>
@@ -57,9 +57,9 @@ export const Header = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium flex items-center"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium flex items-center focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none rounded-md"
                 >
-                  <item.icon className="h-5 w-5 mr-2" />
+                  <item.icon className="h-5 w-5 mr-2" aria-hidden="true" />
                   {item.name}
                 </Link>
               );
@@ -67,7 +67,7 @@ export const Header = () => {
             {user && !user.isAdvisor && (
               <Link
                 to="/advisor-registration"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none rounded-md"
               >
                 Become an Advisor
               </Link>
@@ -80,8 +80,11 @@ export const Header = () => {
               <>
                 <NotificationCenter />
                 <Menu as="div" className="relative">
-                  <Menu.Button className="flex items-center text-gray-600 hover:text-gray-900">
-                    <Cog6ToothIcon className="h-8 w-8" />
+                  <Menu.Button 
+                    className="flex items-center text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none rounded-md p-1"
+                    aria-label="User settings menu"
+                  >
+                    <Cog6ToothIcon className="h-8 w-8" aria-hidden="true" />
                   </Menu.Button>
                   <Transition
                     as={Fragment}
@@ -99,7 +102,7 @@ export const Header = () => {
                             to="/profile"
                             className={`${
                               active ? 'bg-gray-100' : ''
-                            } block px-4 py-2 text-sm text-gray-700`}
+                            } block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-none`}
                           >
                             Profile Settings
                           </Link>
@@ -111,7 +114,7 @@ export const Header = () => {
                             onClick={handleLogout}
                             className={`${
                               active ? 'bg-gray-100' : ''
-                            } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                            } block w-full text-left px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-none`}
                           >
                             Logout
                           </button>
@@ -122,20 +125,21 @@ export const Header = () => {
                 </Menu>
                 {/* Generic user avatar icon */}
                 <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 border border-gray-300 ml-2">
-                  <UserCircleIcon className="h-7 w-7 text-gray-500" />
+                  <UserCircleIcon className="h-7 w-7 text-gray-500" aria-hidden="true" />
+                  <span className="sr-only">User avatar</span>
                 </div>
               </>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/login"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none rounded-md"
                 >
                   Sign in
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium"
+                  className="bg-blue-700 text-white hover:bg-blue-800 px-4 py-2 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 >
                   Sign up
                 </Link>
@@ -145,14 +149,17 @@ export const Header = () => {
             {/* Mobile menu button */}
             <button
               type="button"
-              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label={isMobileMenuOpen ? "Close main menu" : "Open main menu"}
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">{isMobileMenuOpen ? "Close main menu" : "Open main menu"}</span>
               {isMobileMenuOpen ? (
-                <XMarkIcon className="block h-6 w-6" />
+                <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
               ) : (
-                <Bars3Icon className="block h-6 w-6" />
+                <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
               )}
             </button>
           </div>
@@ -170,17 +177,18 @@ export const Header = () => {
         leaveTo="transform opacity-0 scale-95"
         className="md:hidden"
       >
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <div id="mobile-menu" className="px-2 pt-2 pb-3 space-y-1 sm:px-3" role="menu" aria-label="Mobile navigation menu">
           {navigation.map((item) => {
             if (item.requiresAuth && !user) return null;
             return (
               <Link
                 key={item.name}
                 to={item.href}
-                className="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium flex items-center focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 onClick={() => setIsMobileMenuOpen(false)}
+                role="menuitem"
               >
-                <item.icon className="h-5 w-5 mr-2" />
+                <item.icon className="h-5 w-5 mr-2" aria-hidden="true" />
                 {item.name}
               </Link>
             );
@@ -188,8 +196,9 @@ export const Header = () => {
           {user && !user.isAdvisor && (
             <Link
               to="/advisor-registration"
-              className="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
               onClick={() => setIsMobileMenuOpen(false)}
+              role="menuitem"
             >
               Become an Advisor
             </Link>
@@ -198,8 +207,9 @@ export const Header = () => {
             <>
               <Link
                 to="/profile"
-                className="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                className="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 onClick={() => setIsMobileMenuOpen(false)}
+                role="menuitem"
               >
                 Profile Settings
               </Link>
@@ -208,7 +218,8 @@ export const Header = () => {
                   handleLogout();
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                className="w-full text-left text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+                role="menuitem"
               >
                 Sign out
               </button>
