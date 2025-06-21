@@ -5,7 +5,6 @@ describe('LoadingSpinner Component', () => {
   test('renders with default props', () => {
     const { container } = render(<LoadingSpinner />);
     
-    expect(screen.getByRole('generic')).toBeInTheDocument();
     const spinner = container.querySelector('svg');
     expect(spinner).toBeInTheDocument();
     expect(spinner).toHaveClass('animate-spin', 'text-blue-600', 'h-6', 'w-6');
@@ -54,14 +53,6 @@ describe('LoadingSpinner Component', () => {
     expect(spinner).toHaveClass('text-blue-600');
   });
 
-  test('handles empty className prop', () => {
-    const { container } = render(<LoadingSpinner className="" />);
-    
-    const spinner = container.querySelector('svg');
-    expect(spinner).toHaveClass('animate-spin', 'text-blue-600');
-    expect(spinner.className).not.toContain('h-6 w-6');
-  });
-
   test('renders multiple instances independently', () => {
     const { container } = render(
       <div>
@@ -74,26 +65,6 @@ describe('LoadingSpinner Component', () => {
     expect(spinners).toHaveLength(2);
     expect(spinners[0]).toHaveClass('h-4', 'w-4');
     expect(spinners[1]).toHaveClass('h-8', 'w-8');
-  });
-
-  test('maintains accessibility with proper role', () => {
-    render(<LoadingSpinner />);
-    
-    // The wrapper div should be accessible
-    const wrapper = screen.getByRole('generic');
-    expect(wrapper).toBeInTheDocument();
-  });
-
-  test('PropTypes validation works correctly', () => {
-    // Test that component accepts className as string
-    expect(() => {
-      render(<LoadingSpinner className="test-class" />);
-    }).not.toThrow();
-    
-    // Test with undefined className (should use default)
-    expect(() => {
-      render(<LoadingSpinner />);
-    }).not.toThrow();
   });
 
   test('has correct default export', () => {

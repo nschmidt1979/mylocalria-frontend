@@ -1,8 +1,11 @@
 import '@testing-library/jest-dom';
 
 // Polyfills for Node.js environment
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
 
 // Mock Firebase
 jest.mock('./firebase', () => ({
