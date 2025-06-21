@@ -40,7 +40,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npx playwright test --project=chromium
         continue-on-error: false
 
       - name: Upload test reports

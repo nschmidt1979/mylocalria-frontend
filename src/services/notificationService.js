@@ -1,5 +1,6 @@
-import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, orderBy } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { db } from '../firebase';
 
 const functions = getFunctions();
 

@@ -9,6 +9,10 @@ afterEach(() => {
 
 // Mock Firebase to avoid network calls in tests
 vi.mock('../firebase.js', () => ({
+  default: {
+    auth: vi.fn(),
+    db: vi.fn(),
+  },
   auth: {
     currentUser: null,
     signInWithEmailAndPassword: vi.fn(),
@@ -24,6 +28,46 @@ vi.mock('../firebase.js', () => ({
     updateDoc: vi.fn(),
     deleteDoc: vi.fn(),
   },
+}))
+
+// Mock Firebase functions
+vi.mock('firebase/functions', () => ({
+  getFunctions: vi.fn(() => ({})),
+  httpsCallable: vi.fn(() => vi.fn()),
+}))
+
+// Mock Firebase firestore
+vi.mock('firebase/firestore', () => ({
+  getFirestore: vi.fn(),
+  collection: vi.fn(),
+  doc: vi.fn(),
+  addDoc: vi.fn(),
+  getDocs: vi.fn(),
+  updateDoc: vi.fn(),
+  deleteDoc: vi.fn(),
+  query: vi.fn(),
+  where: vi.fn(),
+  orderBy: vi.fn(),
+  limit: vi.fn(),
+  startAfter: vi.fn(),
+}))
+
+// Mock Firebase auth
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({
+    currentUser: null,
+    signInWithEmailAndPassword: vi.fn(),
+    createUserWithEmailAndPassword: vi.fn(),
+    signOut: vi.fn(),
+    onAuthStateChanged: vi.fn(),
+  })),
+  signInWithEmailAndPassword: vi.fn(),
+  createUserWithEmailAndPassword: vi.fn(),
+  signOut: vi.fn(),
+  onAuthStateChanged: vi.fn(),
+  GoogleAuthProvider: vi.fn(),
+  FacebookAuthProvider: vi.fn(),
+  signInWithPopup: vi.fn(),
 }))
 
 // Mock react-router-dom

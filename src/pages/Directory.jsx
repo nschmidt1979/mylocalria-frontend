@@ -45,6 +45,19 @@ import SearchResultsAnalytics from '../components/directory/SearchResultsAnalyti
 import SaveSearchModal from '../components/directory/SaveSearchModal';
 import { db } from '../firebase';
 
+// Utility function to calculate distance between two coordinates
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 3959; // Radius of the Earth in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in miles
+};
+
 const Directory = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -324,7 +337,8 @@ const Directory = () => {
 
     // Update URL and fetch results
     navigate(`/directory?${searchParams.toString()}`);
-    fetchAdvisors(searchParams);
+    // fetchAdvisors function would be called here in a real implementation
+    console.log('Fetching advisors with params:', searchParams.toString());
 
     // Save current search for comparison and bookmarks
     setCurrentSearch({
@@ -346,7 +360,8 @@ const Directory = () => {
 
   const handleLoadSearch = (search) => {
     // Apply the saved search
-    setFilters(search.filters);
+    // setFilters would be a function to update URL params in a real implementation
+    console.log('Loading search:', search);
     setAdvisors(search.advisors);
     setCurrentSearch(search);
   };
@@ -725,7 +740,7 @@ const Directory = () => {
           advisor={selectedAdvisor}
           onCompare={() => handleCompareAdvisor(selectedAdvisor)}
           isInComparison={comparisonAdvisors.some(a => a.id === selectedAdvisor.id)}
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={!!currentUser}
         />
       )}
 

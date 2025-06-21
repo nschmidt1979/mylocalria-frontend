@@ -9,11 +9,14 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.js'],
     css: true,
     reporters: ['verbose'],
+    include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    exclude: ['tests/**/*', 'node_modules/**/*'],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
         'src/test/',
+        'tests/',
         '**/*.d.ts',
         '**/*.test.{js,jsx,ts,tsx}',
         '**/*.spec.{js,jsx,ts,tsx}'
