@@ -12,6 +12,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import AdvisorLocationMap from '../components/directory/AdvisorLocationMap';
 import MessageAdvisorModal from '../components/directory/MessageAdvisorModal';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import SEOHelmet from '../components/common/SEOHelmet';
 
 // Add a helper function for title case
 function toTitleCase(str) {
@@ -362,8 +363,107 @@ const AdvisorProfile = () => {
     );
   }
 
+  // Generate SEO data for advisor
+  const generateAdvisorSEO = () => {
+    if (!advisor) return {};
+
+    const firmName = cleanFirmName(toTitleCase(advisor.primary_business_name));
+    const location = `${toTitleCase(advisor.principal_office_city)}, ${advisor.principal_office_state?.toUpperCase()}`;
+    const title = `${firmName} - Financial Advisor in ${location}`;
+    const description = `${firmName} is a financial advisor in ${location} with CRD #${advisor.crd_number}. ${advisor['5f2_assets_under_management_total_us_dol'] ? `Managing ${formatCurrency(advisor['5f2_assets_under_management_total_us_dol'])} in assets.` : ''} ${stats.totalReviews > 0 ? `Rated ${stats.averageRating.toFixed(1)}/5 stars from ${stats.totalReviews} reviews.` : ''} Contact for financial planning and investment management services.`;
+    
+    const keywords = [
+      'financial advisor',
+      'investment advisor',
+      'wealth management',
+      'financial planning',
+      advisor.principal_office_city?.toLowerCase(),
+      advisor.principal_office_state?.toLowerCase(),
+      'fiduciary',
+      'RIA',
+      'registered investment advisor'
+    ].filter(Boolean).join(', ');
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "FinancialService",
+      "name": firmName,
+      "description": description,
+      "url": `https://mylocalria.com/advisor/${advisor.id}`,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": advisor.principal_office_address_1,
+        "addressLocality": toTitleCase(advisor.principal_office_city),
+        "addressRegion": advisor.principal_office_state?.toUpperCase(),
+        "postalCode": advisor.principal_office_postal_code,
+        "addressCountry": "US"
+      },
+      "telephone": advisor.principal_office_telephone_number,
+      "identifier": {
+        "@type": "PropertyValue",
+        "name": "CRD Number",
+        "value": advisor.crd_number
+      },
+      "serviceType": "Financial Advisory Services",
+      "areaServed": {
+        "@type": "City",
+        "name": toTitleCase(advisor.principal_office_city),
+        "containedInPlace": {
+          "@type": "State",
+          "name": advisor.principal_office_state?.toUpperCase()
+        }
+      }
+    };
+
+    // Add review data if available
+    if (stats.totalReviews > 0) {
+      structuredData.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": stats.averageRating.toFixed(1),
+        "reviewCount": stats.totalReviews,
+        "bestRating": "5",
+        "worstRating": "1"
+      };
+    }
+
+    // Add assets under management if available
+    if (advisor['5f2_assets_under_management_total_us_dol']) {
+      structuredData.additionalProperty = {
+        "@type": "PropertyValue",
+        "name": "Assets Under Management",
+        "value": formatCurrency(advisor['5f2_assets_under_management_total_us_dol'])
+      };
+    }
+
+    return {
+      title,
+      description,
+      keywords,
+      structuredData,
+      breadcrumbs: [
+        { name: "Home", url: "/" },
+        { name: "Directory", url: "/directory" },
+        { name: firmName, url: `/advisor/${advisor.id}` }
+      ]
+    };
+  };
+
+  const seoData = generateAdvisorSEO();
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {advisor && (
+        <SEOHelmet
+          title={seoData.title}
+          description={seoData.description}
+          keywords={seoData.keywords}
+          url={`/advisor/${advisor.id}`}
+          type="article"
+          structuredData={seoData.structuredData}
+          breadcrumbs={seoData.breadcrumbs}
+          canonical={`/advisor/${advisor.id}`}
+        />
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-8">
         {/* Main Content Area (reduced width) */}
         <div className="space-y-8">

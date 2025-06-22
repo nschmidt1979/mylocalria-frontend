@@ -4,6 +4,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import AdvisorCard from '../components/advisors/AdvisorCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import SEOHelmet from '../components/common/SEOHelmet';
 
 const Landing = () => {
   const [featuredAdvisors, setFeaturedAdvisors] = useState([]);
@@ -40,6 +41,29 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOHelmet
+        title="Find Your Perfect Financial Advisor"
+        description="Connect with trusted, fiduciary financial advisors in your area. Read verified reviews, compare services, fees, and credentials to make an informed decision."
+        keywords="financial advisor, investment advisor, wealth management, fiduciary, financial planning, RIA, registered investment advisor"
+        url="/"
+        type="website"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "MyLocalRIA",
+          "url": "https://mylocalria.com",
+          "description": "Find and connect with trusted financial advisors",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://mylocalria.com/directory?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }}
+        breadcrumbs={[
+          { name: "Home", url: "/" }
+        ]}
+      />
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

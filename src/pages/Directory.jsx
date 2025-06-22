@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit, startAfter } from 'firebase/firestore';
+import SEOHelmet from '../components/common/SEOHelmet';
 import { SearchFilters } from '../components/directory/SearchFilters';
 import AdvisorCard from '../components/advisors/AdvisorCard';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -440,8 +441,96 @@ const Directory = () => {
     }
   };
 
+  // Generate dynamic SEO based on current filters
+  const generateDirectorySEO = () => {
+    const filters = getCurrentFilters();
+    let title = "Find Financial Advisors";
+    let description = "Search and compare trusted financial advisors. Read reviews, compare fees, and find the perfect advisor for your needs.";
+    
+    if (filters.location) {
+      title = `Financial Advisors in ${filters.location}`;
+      description = `Find trusted financial advisors in ${filters.location}. Compare services, read reviews, and connect with local investment professionals.`;
+    }
+    
+    if (filters.query) {
+      title = `${filters.query} - Financial Advisor Search`;
+      description = `Search results for "${filters.query}" financial advisors. Compare credentials, services, and client reviews.`;
+    }
+
+    const keywords = [
+      'financial advisor directory',
+      'find financial advisor',
+      'investment advisor search',
+      'wealth management',
+      'financial planning',
+      filters.location && `financial advisor ${filters.location}`,
+      filters.query
+    ].filter(Boolean).join(', ');
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": title,
+      "description": description,
+      "url": `https://mylocalria.com/directory${window.location.search}`,
+      "mainEntity": {
+        "@type": "ItemList",
+        "numberOfItems": totalResults,
+        "itemListElement": advisors.slice(0, 10).map((advisor, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "FinancialService",
+            "name": cleanFirmName(toTitleCase(advisor.primary_business_name)),
+            "url": `https://mylocalria.com/advisor/${advisor.id}`
+          }
+        }))
+      },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://mylocalria.com/"
+          },
+          {
+            "@type": "ListItem", 
+            "position": 2,
+            "name": "Directory",
+            "item": "https://mylocalria.com/directory"
+          }
+        ]
+      }
+    };
+
+    return {
+      title,
+      description,
+      keywords,
+      structuredData,
+      breadcrumbs: [
+        { name: "Home", url: "/" },
+        { name: "Financial Advisor Directory", url: "/directory" }
+      ]
+    };
+  };
+
+  const seoData = generateDirectorySEO();
+
   return (
     <div className="min-h-screen bg-gray-100">
+      <SEOHelmet
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        url={`/directory${window.location.search}`}
+        type="website"
+        structuredData={seoData.structuredData}
+        breadcrumbs={seoData.breadcrumbs}
+        canonical="/directory"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-80 space-y-6">

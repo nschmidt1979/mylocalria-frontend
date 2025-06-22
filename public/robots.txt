@@ -1,0 +1,47 @@
+# Robots.txt for MyLocalRIA - Financial Advisor Directory
+# Updated: 2024
+
+User-agent: *
+
+# Allow access to main public pages
+Allow: /
+Allow: /directory
+Allow: /advisor/*
+Allow: /advisors/*
+
+# Block private user areas
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /write-review/*
+Disallow: /advisor-registration
+
+# Block API endpoints and backend paths
+Disallow: /api/
+Disallow: /__auth/
+
+# Block temporary and development files
+Disallow: /*.tmp
+Disallow: /*.log
+Disallow: /temp/
+Disallow: /cache/
+
+# Allow important resources
+Allow: /public/
+Allow: *.css
+Allow: *.js
+Allow: *.png
+Allow: *.jpg
+Allow: *.jpeg
+Allow: *.gif
+Allow: *.svg
+Allow: *.webp
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://mylocalria.com/sitemap.xml
+Sitemap: https://mylocalria.com/advisor-sitemap.xml
