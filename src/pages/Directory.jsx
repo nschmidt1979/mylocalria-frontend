@@ -9,7 +9,7 @@ import { SortOptions } from '../components/directory/SortOptions';
 import { AdvisorComparison } from '../components/directory/AdvisorComparison';
 import ShareSearchModal from '../components/directory/ShareSearchModal';
 import AdvisorQuickView from '../components/directory/AdvisorQuickView';
-import { MapIcon, Squares2X2Icon, BookmarkIcon, ShareIcon, ChartBarIcon, ChatBubbleLeftIcon, UserGroupIcon, Cog6ToothIcon, ClockIcon, CalendarIcon, ChatBubbleLeftRightIcon, ArrowsRightLeftIcon, ArrowDownTrayIcon, ChartBarSquareIcon } from '@heroicons/react/24/outline';
+import { MapIcon, Squares2X2Icon, BookmarkIcon, ShareIcon, ChartBarIcon, ChatBubbleLeftIcon, UserGroupIcon, Cog6ToothIcon, ClockIcon, CalendarIcon, ChatBubbleLeftRightIcon, ArrowsRightLeftIcon, ArrowDownTrayIcon, ChartBarSquareIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import RecentlyViewedAdvisors from '../components/directory/RecentlyViewedAdvisors';
 import SimilarAdvisors from '../components/directory/SimilarAdvisors';
@@ -441,10 +441,10 @@ const Directory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="w-full lg:w-80 space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          <div className="w-full lg:w-80 space-y-4 lg:space-y-6">
             <SearchTips />
             <SearchFilters
               filters={getCurrentFilters()}
@@ -504,52 +504,68 @@ const Directory = () => {
             )}
           </div>
 
-          <div className="flex-1 space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {searchQuery ? `Search Results for "${searchQuery}"` : 'All Advisors'}
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {advisors.length} {advisors.length === 1 ? 'advisor' : 'advisors'} found
-                  </p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => setShowFeedback(true)}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <ChatBubbleLeftIcon className="h-4 w-4 mr-2 text-gray-400" />
-                    Feedback
-                  </button>
-                  <SortOptions
-                    currentSort={sortBy}
-                    onSortChange={(newSort) => {
-                      // Handle sort change
-                    }}
-                  />
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded-md ${
-                        viewMode === 'grid'
-                          ? 'bg-blue-100 text-blue-600'
-                          : 'text-gray-400 hover:text-gray-500'
-                      }`}
-                    >
-                      <Squares2X2Icon className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('map')}
-                      className={`p-2 rounded-md ${
-                        viewMode === 'map'
-                          ? 'bg-blue-100 text-blue-600'
-                          : 'text-gray-400 hover:text-gray-500'
-                      }`}
-                    >
-                      <MapIcon className="h-5 w-5" />
-                    </button>
+          <div className="flex-1 space-y-4 sm:space-y-6">
+            {/* Results Header */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-4 sm:p-6">
+                <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                      {searchQuery ? `Search Results for "${searchQuery}"` : 'All Advisors'}
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {advisors.length} {advisors.length === 1 ? 'advisor' : 'advisors'} found
+                    </p>
+                  </div>
+                  
+                  {/* Mobile-optimized toolbar */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                    {/* Primary actions - always visible */}
+                    <div className="flex items-center gap-2">
+                      <SortOptions
+                        currentSort={sortBy}
+                        onSortChange={(newSort) => {
+                          // Handle sort change
+                        }}
+                      />
+                      
+                      {/* View mode toggle */}
+                      <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => setViewMode('grid')}
+                          className={`p-2 min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                            viewMode === 'grid'
+                              ? 'bg-blue-100 text-blue-600'
+                              : 'text-gray-400 hover:text-gray-500 hover:bg-gray-50'
+                          }`}
+                          title="Grid View"
+                        >
+                          <Squares2X2Icon className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => setViewMode('map')}
+                          className={`p-2 min-h-[44px] min-w-[44px] flex items-center justify-center border-l border-gray-300 ${
+                            viewMode === 'map'
+                              ? 'bg-blue-100 text-blue-600'
+                              : 'text-gray-400 hover:text-gray-500 hover:bg-gray-50'
+                          }`}
+                          title="Map View"
+                        >
+                          <MapIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Secondary actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowFeedback(true)}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 min-h-[44px]"
+                      >
+                        <ChatBubbleLeftIcon className="h-4 w-4 sm:mr-2 text-gray-400" />
+                        <span className="hidden sm:inline">Feedback</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -559,8 +575,32 @@ const Directory = () => {
               <SearchResultsSummary advisors={advisors} filters={getCurrentFilters()} />
             )}
 
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Results Content */}
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-500">Loading advisors...</p>
+                </div>
+              </div>
+            ) : advisors.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="max-w-md mx-auto">
+                  <MagnifyingGlassIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No advisors found</h3>
+                  <p className="text-gray-500 mb-4">Try adjusting your search criteria or location.</p>
+                  <button
+                    onClick={() => {
+                      // Clear filters and reload
+                    }}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px]"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {advisors.map((advisor) => (
                   <AdvisorCard
                     key={advisor.id}
@@ -572,30 +612,41 @@ const Directory = () => {
                 ))}
               </div>
             ) : (
-              <div className="h-[600px] rounded-lg overflow-hidden shadow">
-                {/* Placeholder for the removed AdvisorMap component */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="h-96 sm:h-[500px] lg:h-[600px] relative">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                    <div className="text-center">
+                      <MapIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">Map view coming soon</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
-            {hasMore && (
-              <div className="flex justify-center mt-8">
+            {/* Load More Button */}
+            {hasMore && advisors.length > 0 && (
+              <div className="flex justify-center pt-4">
                 <button
                   onClick={() => {
                     // Handle load more
                   }}
                   disabled={loading}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] transition-colors"
                 >
                   {loading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Loading...
+                      Loading more...
                     </>
                   ) : (
-                    'Load More'
+                    <>
+                      Load More Advisors
+                      <ChevronDownIcon className="ml-2 h-5 w-5" />
+                    </>
                   )}
                 </button>
               </div>

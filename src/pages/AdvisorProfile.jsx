@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { StarIcon, MapPinIcon, BuildingOfficeIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, CheckBadgeIcon, ShareIcon } from '@heroicons/react/24/solid';
-import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
+import { StarIcon as StarOutlineIcon, PhoneIcon as PhoneOutlineIcon, GlobeAltIcon as GlobeOutlineIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ReviewList } from '../components/reviews/ReviewList';
 import { WriteReviewModal } from '../components/reviews/WriteReviewModal';
@@ -363,17 +363,17 @@ const AdvisorProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-8">
-        {/* Main Content Area (reduced width) */}
-        <div className="space-y-8">
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row gap-6 mb-8">
-            {/* Advisor Info Box */}
-            <div className="flex-1 bg-white rounded-lg shadow-sm p-6 flex flex-col justify-center">
-              <div className="flex flex-col md:flex-row md:items-start md:space-x-6">
-                <div className="flex-shrink-0 mb-4 md:mb-0">
-                  <div className="h-32 w-32 rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Main Content Area */}
+          <div className="flex-1 space-y-6 sm:space-y-8">
+            {/* Header Section */}
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 lg:p-8">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-8">
+                {/* Logo */}
+                <div className="flex-shrink-0 mb-6 lg:mb-0">
+                  <div className="h-24 w-24 sm:h-32 sm:w-32 lg:h-40 lg:w-40 rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center mx-auto lg:mx-0">
                     {logoUrl ? (
                       <img
                         src={logoUrl}
@@ -382,33 +382,106 @@ const AdvisorProfile = () => {
                       />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-400">
-                        <BuildingOfficeIcon className="h-16 w-16" />
+                        <BuildingOfficeIcon className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20" />
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <h1 className="text-3xl font-bold text-gray-900">{cleanFirmName(toTitleCase(advisor.primary_business_name))}</h1>
+                
+                {/* Advisor Info */}
+                <div className="flex-1 text-center lg:text-left">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                    {cleanFirmName(toTitleCase(advisor.primary_business_name))}
+                  </h1>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm sm:text-base mb-6">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <dt className="text-xs sm:text-sm font-medium text-gray-500 mb-1">CRD Number</dt>
+                      <dd className="font-semibold text-gray-900">{advisor.crd_number}</dd>
+                    </div>
+                    
+                    {advisor.status_effective_date && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <dt className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Founded</dt>
+                        <dd className="font-semibold text-gray-900">{new Date(formatRegistrationDate(advisor.status_effective_date)).getFullYear()}</dd>
+                      </div>
+                    )}
+                    
+                    <div className="bg-gray-50 p-3 rounded-lg sm:col-span-2 lg:col-span-1">
+                      <dt className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Location</dt>
+                      <dd className="font-semibold text-gray-900">{toTitleCase(advisor.principal_office_city)}, {advisor.principal_office_state ? advisor.principal_office_state.toUpperCase() : ''}</dd>
+                    </div>
                   </div>
-                  <div className="text-gray-700 mb-1"><span className="font-semibold">CRD Number:</span> {advisor.crd_number}</div>
-                  <div className="text-gray-700 mb-1"><span className="font-semibold">Founded:</span> {advisor.status_effective_date ? new Date(formatRegistrationDate(advisor.status_effective_date)).getFullYear() : ''}</div>
-                  <div className="text-gray-700 mb-1"><span className="font-semibold">Address:</span> {toTitleCase(advisor.principal_office_city)}, {advisor.principal_office_state ? advisor.principal_office_state.toUpperCase() : ''}</div>
+                  
+                  {/* Contact Info */}
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                    {advisor.principal_office_telephone_number && (
+                      <a 
+                        href={`tel:${advisor.principal_office_telephone_number}`}
+                        className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] transition-colors"
+                      >
+                        <PhoneOutlineIcon className="h-5 w-5 mr-2" />
+                        Call
+                      </a>
+                    )}
+                    
+                    {advisor.website_address && (
+                      <a 
+                        href={advisor.website_address}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] transition-colors"
+                      >
+                        <GlobeOutlineIcon className="h-5 w-5 mr-2" />
+                        Visit Website
+                      </a>
+                    )}
+                    
+                    <button
+                      onClick={handleWriteReview}
+                      className="inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[44px] transition-colors"
+                    >
+                      <StarOutlineIcon className="h-5 w-5 mr-2" />
+                      Write Review
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
           {/* About section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">About</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div><span className="font-semibold">Number of Financial Advisors:</span> {advisor['5b1_how_many_employees_perform_investmen'] || 'Not provided'}</div>
-              <div><span className="font-semibold">Financial Advisors:</span> {repNames.length > 0 ? repNames.join(', ') : 'Not provided'}</div>
-              <div><span className="font-semibold">Number of Client Accounts:</span> {formatNumber(advisor['5f2_assets_under_management_total_number']) || 0}</div>
-              <div><span className="font-semibold">Other Advisor Business Activities:</span> {formatOtherBusinessActivities(advPart2?.other_business_activities)}</div>
-              <div><span className="font-semibold">Assets Under Management:</span> {formatCurrency(advisor['5f2_assets_under_management_total_us_dol'])}</div>
-              <div><span className="font-semibold">Data as of:</span> {advPart2 && advPart2.upload_date ? new Date(advPart2.upload_date).toLocaleDateString() : 'N/A'}</div>
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">About</h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <dt className="text-sm font-medium text-gray-500 mb-1">Number of Financial Advisors</dt>
+                  <dd className="text-lg font-semibold text-gray-900">{advisor['5b1_how_many_employees_perform_investmen'] || 'Not provided'}</dd>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <dt className="text-sm font-medium text-gray-500 mb-1">Number of Client Accounts</dt>
+                  <dd className="text-lg font-semibold text-gray-900">{formatNumber(advisor['5f2_assets_under_management_total_number']) || 0}</dd>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <dt className="text-sm font-medium text-gray-500 mb-1">Assets Under Management</dt>
+                  <dd className="text-lg font-semibold text-gray-900">{formatCurrency(advisor['5f2_assets_under_management_total_us_dol'])}</dd>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <dt className="text-sm font-medium text-gray-500 mb-1">Data as of</dt>
+                  <dd className="text-lg font-semibold text-gray-900">{advPart2 && advPart2.upload_date ? new Date(advPart2.upload_date).toLocaleDateString() : 'N/A'}</dd>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <dt className="text-sm font-medium text-gray-500 mb-2">Financial Advisors</dt>
+                  <dd className="text-base text-gray-900">{repNames.length > 0 ? repNames.join(', ') : 'Not provided'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500 mb-2">Other Business Activities</dt>
+                  <dd className="text-base text-gray-900">{formatOtherBusinessActivities(advPart2?.other_business_activities)}</dd>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -436,47 +509,48 @@ const AdvisorProfile = () => {
 
           {/* Fees & Compensation */}
           {advPart2 && (
-            <div className="bg-white rounded-lg shadow p-6 w-full mx-auto mb-8">
-              <h2 className="text-lg font-bold mb-4">Fee Schedule & Details</h2>
-              <div className="flex flex-col md:flex-row gap-8">
-                {/* Fee Schedule Table */}
-                <div className="flex-1">
-                  <table className="w-full max-w-md bg-white">
-                    <thead>
-                      <tr>
-                        <th className="px-3 py-2 text-left text-sm font-semibold text-gray-900 border-b">Fee Schedule</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(advPart2.fees) && [...new Set(advPart2.fees)].map((fee, idx) => (
-                        <tr key={idx} className="border-b last:border-b-0">
-                          <td className="px-3 py-2 text-sm text-gray-900">{fee}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Fee Details */}
-                <div className="flex-1 space-y-4">
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Fee Schedule & Details</h2>
+              <div className="space-y-6">
+                {/* Fee Schedule */}
+                {Array.isArray(advPart2.fees) && advPart2.fees.length > 0 && (
                   <div>
-                    <span className="font-semibold">Fee Notes:</span>
-                    <span className="ml-1 text-gray-700">{advPart2.feeNotes || advPart2.fee_notes || 'Not provided'}</span>
+                    <h3 className="text-base font-semibold text-gray-900 mb-3">Fee Schedule</h3>
+                    <div className="bg-gray-50 rounded-lg p-4 overflow-x-auto">
+                      <div className="space-y-2 min-w-full">
+                        {[...new Set(advPart2.fees)].map((fee, idx) => (
+                          <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
+                            <span className="text-sm text-gray-900 break-words flex-1">{fee}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-semibold">Performance-Based Fees:</span>
-                    <span className="ml-1 text-gray-700">{
+                )}
+                
+                {/* Fee Details Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <dt className="text-sm font-medium text-gray-500 mb-2">Fee Notes</dt>
+                    <dd className="text-sm text-gray-900">{advPart2.feeNotes || advPart2.fee_notes || 'Not provided'}</dd>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <dt className="text-sm font-medium text-gray-500 mb-2">Performance-Based Fees</dt>
+                    <dd className="text-sm text-gray-900">{
                       (advPart2.performanceFeeRate || advPart2.performance_fee_rate)
                         ? 'Yes'
                         : ((advPart2.performanceBasedFees || advPart2.performance_fees) ? (advPart2.performanceBasedFees || advPart2.performance_fees) : 'No')
-                    }</span>
+                    }</dd>
                   </div>
-                  <div>
-                    <span className="font-semibold">Performance Fee Rate:</span>
-                    <span className="ml-1 text-gray-700">{
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg sm:col-span-2 lg:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500 mb-2">Performance Fee Rate</dt>
+                    <dd className="text-sm text-gray-900">{
                       (advPart2.performanceFeeRate || advPart2.performance_fee_rate)
                         ? ((advPart2.performanceFeeRate || advPart2.performance_fee_rate).toLowerCase() === 'none' ? 'None' : (advPart2.performanceFeeRate || advPart2.performance_fee_rate))
                         : 'None'
-                    }</span>
+                    }</dd>
                   </div>
                 </div>
               </div>

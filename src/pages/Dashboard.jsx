@@ -5,6 +5,7 @@ import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ReviewCard from '../components/reviews/ReviewCard';
+import { StarIcon, ChartBarIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -75,7 +76,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -83,81 +84,132 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md mx-auto p-6">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px]"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow px-6 py-8 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.firstName}!
-          </h1>
-          <p className="text-gray-600">
-            Manage your reviews and profile from your dashboard.
-          </p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 mb-6 sm:mb-8">
+          <div className="flex items-center space-x-4">
+            <div className="flex-shrink-0">
+              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-blue-100 flex items-center justify-center">
+                <UserIcon className="h-8 w-8 sm:h-10 sm:w-10 text-blue-600" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {user.firstName || user.displayName || 'User'}!
+              </h1>
+              <p className="text-gray-600 text-base sm:text-lg">
+                Manage your reviews and profile from your dashboard.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Total Reviews</h3>
-            <p className="text-3xl font-bold text-blue-600">{stats.totalReviews}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <ChartBarIcon className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="ml-4 flex-1">
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                  Total Reviews
+                </h3>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+                  {stats.totalReviews}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Average Rating</h3>
-            <p className="text-3xl font-bold text-blue-600">
-              {stats.averageRating.toFixed(1)} / 5.0
-            </p>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <StarIcon className="h-8 w-8 text-yellow-500" />
+              </div>
+              <div className="ml-4 flex-1">
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                  Average Rating
+                </h3>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+                  {stats.averageRating > 0 ? `${stats.averageRating.toFixed(1)} / 5.0` : 'N/A'}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Last Review</h3>
-            <p className="text-3xl font-bold text-blue-600">
-              {stats.lastReviewDate
-                ? new Date(stats.lastReviewDate.toDate()).toLocaleDateString()
-                : 'No reviews yet'}
-            </p>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CalendarIcon className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-4 flex-1">
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                  Last Review
+                </h3>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+                  {stats.lastReviewDate
+                    ? new Date(stats.lastReviewDate.toDate()).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                      })
+                    : 'None'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow mb-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 sm:mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Quick Actions</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Quick Actions</h2>
           </div>
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link
-              to="/directory"
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-            >
-              Find an Advisor
-            </Link>
-            <Link
-              to="/profile"
-              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Edit Profile
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Sign Out
-            </button>
+          <div className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Link
+                to="/directory"
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors min-h-[48px]"
+              >
+                Find an Advisor
+              </Link>
+              <Link
+                to="/profile"
+                className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors min-h-[48px]"
+              >
+                Edit Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors min-h-[48px] sm:col-span-2 lg:col-span-1"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Recent Reviews */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Your Recent Reviews</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Your Recent Reviews</h2>
           </div>
           <div className="p-6">
             {userReviews.length > 0 ? (
@@ -167,11 +219,15 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">You haven't written any reviews yet.</p>
+              <div className="text-center py-8 sm:py-12">
+                <StarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  You haven't written any reviews yet. Find an advisor to get started.
+                </p>
                 <Link
                   to="/directory"
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[48px]"
                 >
                   Find an Advisor to Review
                 </Link>
