@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, MapPinIcon, BuildingOfficeIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
+import { getSearchSuggestionsOptimized } from '../../services/firebaseOptimizationService';
 
 const SearchSuggestions = ({ searchQuery, onSelect }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -21,65 +22,30 @@ const SearchSuggestions = ({ searchQuery, onSelect }) => {
 
       try {
         setLoading(true);
-        const queryLower = searchQuery.toLowerCase();
 
-        // Fetch matching advisors
-        const advisorsQuery = query(
-          collection(db, 'state_adv_part_1_data'),
-          where('name', '>=', queryLower),
-          where('name', '<=', queryLower + '\uf8ff'),
-          limit(3)
-        );
+        // Use optimized search suggestions with client-side filtering
+        const suggestionsData = await getSearchSuggestionsOptimized(searchQuery);
 
-        // Fetch matching locations
-        const locationsQuery = query(
-          collection(db, 'locations'),
-          where('name', '>=', queryLower),
-          where('name', '<=', queryLower + '\uf8ff'),
-          limit(3)
-        );
-
-        // Fetch matching specializations
-        const specializationsQuery = query(
-          collection(db, 'specializations'),
-          where('name', '>=', queryLower),
-          where('name', '<=', queryLower + '\uf8ff'),
-          limit(3)
-        );
-
-        const [advisorsSnapshot, locationsSnapshot, specializationsSnapshot] = await Promise.all([
-          getDocs(advisorsQuery),
-          getDocs(locationsQuery),
-          getDocs(specializationsQuery),
-        ]);
-
-        const advisors = advisorsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          type: 'advisor',
-          name: doc.data().name,
-          company: doc.data().company,
-          location: doc.data().location,
-        }));
-
-        const locations = locationsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          type: 'location',
-          name: doc.data().name,
-          state: doc.data().state,
-        }));
-
-        const specializations = specializationsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          type: 'specialization',
-          name: doc.data().name,
-          description: doc.data().description,
-        }));
-
-        // Combine and sort suggestions
+        // Convert to the expected format
         const allSuggestions = [
-          ...advisors.map(a => ({ ...a, relevance: 3 })), // Highest relevance
-          ...locations.map(l => ({ ...l, relevance: 2 })), // Medium relevance
-          ...specializations.map(s => ({ ...s, relevance: 1 })), // Lower relevance
+          ...suggestionsData.advisors.map(name => ({
+            id: name.toLowerCase().replace(/\s+/g, '-'),
+            type: 'advisor',
+            name,
+            relevance: 3
+          })),
+          ...suggestionsData.locations.map(name => ({
+            id: name.toLowerCase().replace(/\s+/g, '-'),
+            type: 'location',
+            name,
+            relevance: 2
+          })),
+          ...suggestionsData.specializations.map(name => ({
+            id: name.toLowerCase().replace(/\s+/g, '-'),
+            type: 'specialization',
+            name,
+            relevance: 1
+          }))
         ].sort((a, b) => b.relevance - a.relevance);
 
         setSuggestions(allSuggestions);

@@ -44,6 +44,7 @@ import SearchResultsReviews from '../components/directory/SearchResultsReviews';
 import SearchResultsAnalytics from '../components/directory/SearchResultsAnalytics';
 import SaveSearchModal from '../components/directory/SaveSearchModal';
 import { db } from '../firebase';
+import { searchOptimized } from '../services/firebaseOptimizationService';
 
 const Directory = () => {
   const [searchParams] = useSearchParams();
@@ -123,60 +124,15 @@ const Directory = () => {
         setLoading(true);
         setError(null);
 
-        // Build query based on filters
-        let advisorsQuery = query(collection(db, 'state_adv_part_1_data'));
-
-        // Apply filters from URL parameters
+        // Get filters from URL parameters
         const filters = getCurrentFilters();
 
-        // Add where clauses based on filters
-        if (filters.verifiedOnly) {
-          advisorsQuery = query(advisorsQuery, where('verified', '==', true));
-        }
-        if (filters.feeOnly) {
-          advisorsQuery = query(advisorsQuery, where('feeOnly', '==', true));
-        }
-        if (filters.minRating) {
-          advisorsQuery = query(advisorsQuery, where('averageRating', '>=', parseFloat(filters.minRating)));
-        }
-        if (filters.specializations?.length > 0) {
-          advisorsQuery = query(advisorsQuery, where('specializations', 'array-contains-any', filters.specializations));
-        }
-        if (filters.certifications?.length > 0) {
-          advisorsQuery = query(advisorsQuery, where('certifications', 'array-contains-any', filters.certifications));
-        }
+        // Use optimized search
+        const searchResult = await searchOptimized(filters);
+        
+        let advisorsData = searchResult.advisors;
 
-        // Add ordering and limit
-        advisorsQuery = query(
-          advisorsQuery,
-          orderBy('averageRating', 'desc'),
-          orderBy('reviewCount', 'desc'),
-          limit(RESULTS_PER_PAGE)
-        );
-
-        const snapshot = await getDocs(advisorsQuery);
-        let advisorsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          // Only keep the selected fields
-          return {
-            id: doc.id,
-            crd_number: data.crd_number,
-            primary_business_name: data.primary_business_name,
-            principal_office_address_1: data.principal_office_address_1,
-            principal_office_address_2: data.principal_office_address_2,
-            principal_office_city: data.principal_office_city,
-            principal_office_state: data.principal_office_state,
-            principal_office_postal_code: data.principal_office_postal_code,
-            principal_office_telephone_number: data.principal_office_telephone_number,
-            website_address: data.website_address,
-            status_effective_date: data.status_effective_date,
-            '5b1_how_many_employees_perform_investmen': data['5b1_how_many_employees_perform_investmen'],
-            '5f2_assets_under_management_total_number': data['5f2_assets_under_management_total_number'],
-            '5f2_assets_under_management_total_us_dol': data['5f2_assets_under_management_total_us_dol'],
-          };
-        });
-
-        // Filter by location if specified
+        // Apply location-based filtering if needed
         if (filters.location) {
           try {
             const locationCoords = await geocodeAddress(filters.location);
@@ -185,7 +141,7 @@ const Directory = () => {
             console.error('Error geocoding location:', err);
             // Fall back to text-based filtering if geocoding fails
             advisorsData = advisorsData.filter(advisor => 
-              advisor.location?.toLowerCase().includes(filters.location.toLowerCase())
+              advisor.principal_office_city?.toLowerCase().includes(filters.location.toLowerCase())
             );
           }
         } else if (userLocation) {
@@ -193,24 +149,13 @@ const Directory = () => {
           advisorsData = filterAdvisorsByDistance(advisorsData, userLocation, filters.radius);
         }
 
-        // Filter by search query if specified
-        if (filters.query) {
-          const queryLower = filters.query.toLowerCase();
-          advisorsData = advisorsData.filter(advisor =>
-            advisor.name?.toLowerCase().includes(queryLower) ||
-            advisor.company?.toLowerCase().includes(queryLower) ||
-            advisor.specializations?.some(spec => spec.toLowerCase().includes(queryLower)) ||
-            advisor.certifications?.some(cert => cert.toLowerCase().includes(queryLower))
-          );
-        }
-
         // Sort advisors
         advisorsData = sortAdvisors(advisorsData, sortBy, userLocation);
 
         setAdvisors(advisorsData);
-        setTotalResults(advisorsData.length);
-        setHasMore(snapshot.docs.length === RESULTS_PER_PAGE);
-        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+        setTotalResults(searchResult.totalResults);
+        setHasMore(searchResult.hasMore);
+        setLastDoc(null); // Not needed with optimized search
       } catch (err) {
         console.error('Error fetching advisors:', err);
         setError('Failed to load advisors. Please try again later.');

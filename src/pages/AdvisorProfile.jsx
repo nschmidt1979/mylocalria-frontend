@@ -12,6 +12,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import AdvisorLocationMap from '../components/directory/AdvisorLocationMap';
 import MessageAdvisorModal from '../components/directory/MessageAdvisorModal';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { fetchAdvisorProfileOptimized } from '../services/firebaseOptimizationService';
 
 // Add a helper function for title case
 function toTitleCase(str) {
@@ -197,90 +198,18 @@ const AdvisorProfile = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch advisor details
-        const advisorDoc = await getDoc(doc(db, 'state_adv_part_1_data', id));
-        if (!advisorDoc.exists()) {
-          throw new Error('Advisor not found');
-        }
+        // Use optimized advisor profile fetching
+        const profileData = await fetchAdvisorProfileOptimized(id);
+        
+        setAdvisor(profileData.advisor);
+        setLogoUrl(profileData.logoUrl);
+        setAdvPart2(profileData.advPart2);
+        setAdvPart2B(profileData.advPart2B);
+        setReviews(profileData.reviews);
+        setRepNames(profileData.repNames);
+        setRepProfiles(profileData.repProfiles || []);
+        setStats(profileData.stats);
 
-        const advisorData = {
-          id: advisorDoc.id,
-          ...advisorDoc.data()
-        };
-        setAdvisor(advisorData);
-
-        // Fetch logo from adviser_logos using crd_number
-        if (advisorData.crd_number) {
-          const logosQuery = query(
-            collection(db, 'adviser_logos'),
-            where('crd_number', '==', advisorData.crd_number),
-            limit(1)
-          );
-          const logosSnapshot = await getDocs(logosQuery);
-          if (!logosSnapshot.empty) {
-            setLogoUrl(logosSnapshot.docs[0].data().logo_url);
-          }
-        }
-
-        // Fetch reviews
-        const reviewsQuery = query(
-          collection(db, 'reviews'),
-          where('advisorId', '==', id),
-          orderBy('createdAt', 'desc')
-        );
-        const reviewsSnapshot = await getDocs(reviewsQuery);
-        const reviewsData = reviewsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-        // Calculate review statistics
-        const totalReviews = reviewsData.length;
-        const averageRating = totalReviews > 0
-          ? reviewsData.reduce((acc, review) => acc + review.rating, 0) / totalReviews
-          : 0;
-        const ratingDistribution = reviewsData.reduce((acc, review) => {
-          acc[review.rating] = (acc[review.rating] || 0) + 1;
-          return acc;
-        }, { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
-
-        // Fetch ADV Part 2 data using crd_number
-        if (advisorData.crd_number) {
-          const adv2Query = query(
-            collection(db, 'adv_part_2_data'),
-            where('crd_number', '==', advisorData.crd_number),
-            limit(1)
-          );
-          const adv2Snapshot = await getDocs(adv2Query);
-          if (!adv2Snapshot.empty) {
-            setAdvPart2(adv2Snapshot.docs[0].data());
-          }
-        }
-
-        // Fetch ADV Part 2B data using crd_number (for rep names and profiles)
-        if (advisorData.crd_number) {
-          const adv2bQuery = query(
-            collection(db, 'adv_part_2b_data'),
-            where('crd_number', '==', advisorData.crd_number)
-          );
-          const adv2bSnapshot = await getDocs(adv2bQuery);
-          const names = adv2bSnapshot.docs
-            .map(doc => doc.data().rep_name)
-            .filter(Boolean);
-          setRepNames(names);
-          // Store all rep profiles
-          setRepProfiles(adv2bSnapshot.docs.map(doc => doc.data()));
-          if (!adv2bSnapshot.empty) {
-            setAdvPart2B(adv2bSnapshot.docs[0].data());
-          }
-        }
-
-        setReviews(reviewsData);
-        setStats({
-          totalReviews,
-          averageRating,
-          ratingDistribution
-        });
       } catch (err) {
         console.error('Error fetching advisor data:', err);
         setError(err.message);

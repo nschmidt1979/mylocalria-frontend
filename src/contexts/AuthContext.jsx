@@ -14,6 +14,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { getUserProfileCached, cacheUtils } from '../services/firebaseOptimizationService';
 
 const AuthContext = createContext();
 
@@ -110,14 +111,16 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Get additional user data from Firestore
-        const userProfile = await getUserProfile(user.uid);
+        // Get additional user data from Firestore with caching
+        const userProfile = await getUserProfileCached(user.uid);
         setUser({
           ...user,
           ...userProfile,
         });
       } else {
         setUser(null);
+        // Clear user-related caches on logout
+        cacheUtils.clear('user_profile_');
       }
       setLoading(false);
     });

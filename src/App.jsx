@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
@@ -5,6 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AdminRoute } from './components/auth/AdminRoute';
 import RouteTransition from './components/common/RouteTransition';
 import PrivateRoute from './components/auth/PrivateRoute';
+import { initializeOptimization } from './services/firebaseOptimizationService';
 
 // Pages
 import Landing from './pages/Landing';
@@ -21,6 +23,11 @@ import AdvisorRegistration from './pages/AdvisorRegistration';
 import FirebaseAuthAction from './pages/FirebaseAuthAction';
 
 function App() {
+  // Initialize Firebase optimization service
+  React.useEffect(() => {
+    initializeOptimization();
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
