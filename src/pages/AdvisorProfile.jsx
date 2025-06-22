@@ -209,30 +209,52 @@ const AdvisorProfile = () => {
         };
         setAdvisor(advisorData);
 
-        // Fetch logo from adviser_logos using crd_number
+        // Batch fetch all related data simultaneously for better performance
+        const fetchPromises = [];
+        
+        // Fetch reviews
+        const reviewsQuery = query(
+          collection(db, 'reviews'),
+          where('advisorId', '==', id),
+          orderBy('createdAt', 'desc'),
+          limit(50) // Limit initial review load for performance
+        );
+        fetchPromises.push(getDocs(reviewsQuery));
+
+        // Fetch related data if CRD number exists
         if (advisorData.crd_number) {
+          // Fetch logo
           const logosQuery = query(
             collection(db, 'adviser_logos'),
             where('crd_number', '==', advisorData.crd_number),
             limit(1)
           );
-          const logosSnapshot = await getDocs(logosQuery);
-          if (!logosSnapshot.empty) {
-            setLogoUrl(logosSnapshot.docs[0].data().logo_url);
-          }
+          fetchPromises.push(getDocs(logosQuery));
+
+          // Fetch ADV Part 2 data
+          const adv2Query = query(
+            collection(db, 'adv_part_2_data'),
+            where('crd_number', '==', advisorData.crd_number),
+            limit(1)
+          );
+          fetchPromises.push(getDocs(adv2Query));
+
+          // Fetch ADV Part 2B data
+          const adv2bQuery = query(
+            collection(db, 'adv_part_2b_data'),
+            where('crd_number', '==', advisorData.crd_number)
+          );
+          fetchPromises.push(getDocs(adv2bQuery));
         }
 
-        // Fetch reviews
-        const reviewsQuery = query(
-          collection(db, 'reviews'),
-          where('advisorId', '==', id),
-          orderBy('createdAt', 'desc')
-        );
-        const reviewsSnapshot = await getDocs(reviewsQuery);
-        const reviewsData = reviewsSnapshot.docs.map(doc => ({
+        // Execute all queries in parallel
+        const [reviewsSnapshot, logosSnapshot, adv2Snapshot, adv2bSnapshot] = await Promise.all(fetchPromises);
+
+        // Process reviews
+        const reviewsData = reviewsSnapshot?.docs?.map(doc => ({
           id: doc.id,
           ...doc.data()
-        }));
+        })) || [];
 
         // Calculate review statistics
         const totalReviews = reviewsData.length;
@@ -244,35 +266,24 @@ const AdvisorProfile = () => {
           return acc;
         }, { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
 
-        // Fetch ADV Part 2 data using crd_number
-        if (advisorData.crd_number) {
-          const adv2Query = query(
-            collection(db, 'adv_part_2_data'),
-            where('crd_number', '==', advisorData.crd_number),
-            limit(1)
-          );
-          const adv2Snapshot = await getDocs(adv2Query);
-          if (!adv2Snapshot.empty) {
-            setAdvPart2(adv2Snapshot.docs[0].data());
-          }
+        // Process logo data
+        if (logosSnapshot && !logosSnapshot.empty) {
+          setLogoUrl(logosSnapshot.docs[0].data().logo_url);
         }
 
-        // Fetch ADV Part 2B data using crd_number (for rep names and profiles)
-        if (advisorData.crd_number) {
-          const adv2bQuery = query(
-            collection(db, 'adv_part_2b_data'),
-            where('crd_number', '==', advisorData.crd_number)
-          );
-          const adv2bSnapshot = await getDocs(adv2bQuery);
+        // Process ADV Part 2 data
+        if (adv2Snapshot && !adv2Snapshot.empty) {
+          setAdvPart2(adv2Snapshot.docs[0].data());
+        }
+
+        // Process ADV Part 2B data
+        if (adv2bSnapshot && !adv2bSnapshot.empty) {
           const names = adv2bSnapshot.docs
             .map(doc => doc.data().rep_name)
             .filter(Boolean);
           setRepNames(names);
-          // Store all rep profiles
           setRepProfiles(adv2bSnapshot.docs.map(doc => doc.data()));
-          if (!adv2bSnapshot.empty) {
-            setAdvPart2B(adv2bSnapshot.docs[0].data());
-          }
+          setAdvPart2B(adv2bSnapshot.docs[0].data());
         }
 
         setReviews(reviewsData);

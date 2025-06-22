@@ -14,6 +14,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { handleFirebaseError, validateUserPermissions, retryOperation } from '../utils/errorHandler';
 
 const AuthContext = createContext();
 
@@ -29,32 +30,50 @@ export function AuthProvider({ children }) {
   // Create user profile in Firestore
   const createUserProfile = async (userData) => {
     const userRef = doc(db, 'users', userData.uid);
-    await setDoc(userRef, {
-      ...userData,
+    
+    // Sanitize user data - only include safe fields
+    const sanitizedData = {
+      email: userData.email,
+      displayName: userData.displayName || '',
+      photoURL: userData.photoURL || '',
+      userType: 'user', // Default role
+      emailVerified: userData.emailVerified || false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    };
+    
+    try {
+      await setDoc(userRef, sanitizedData);
+      return sanitizedData;
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      throw new Error('Failed to create user profile');
+    }
   };
 
   // Register new user
   const register = async (email, password) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await retryOperation(async () => {
+        return await createUserWithEmailAndPassword(auth, email, password);
+      });
       return userCredential.user;
     } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
+      const errorDetails = handleFirebaseError(error, 'UserRegistration', { email });
+      throw new Error(errorDetails.message);
     }
   };
 
   // Login user
   const login = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await retryOperation(async () => {
+        return await signInWithEmailAndPassword(auth, email, password);
+      });
       return userCredential.user;
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      const errorDetails = handleFirebaseError(error, 'UserLogin', { email });
+      throw new Error(errorDetails.message);
     }
   };
 
@@ -63,8 +82,8 @@ export function AuthProvider({ children }) {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
+      const errorDetails = handleFirebaseError(error, 'UserLogout');
+      throw new Error(errorDetails.message);
     }
   };
 
@@ -72,38 +91,54 @@ export function AuthProvider({ children }) {
   const getUserProfile = async (uid) => {
     try {
       const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
+      const userSnap = await retryOperation(async () => {
+        return await getDoc(userRef);
+      });
+      
       if (userSnap.exists()) {
         return userSnap.data();
       }
       return null;
     } catch (error) {
-      console.error('Error fetching user profile:', error);
-      throw error;
+      const errorDetails = handleFirebaseError(error, 'GetUserProfile', { uid });
+      throw new Error(errorDetails.message);
     }
   };
 
   // Update user profile in Firestore
   const updateUserProfile = async (uid, data) => {
     try {
-      const userRef = doc(db, 'users', uid);
-      await setDoc(userRef, {
-        ...data,
+      // Validate user permissions
+      validateUserPermissions({ uid }, 'update-profile');
+      
+      // Sanitize data
+      const sanitizedData = {
+        displayName: data.displayName?.substring(0, 100) || '',
+        photoURL: data.photoURL || '',
+        // Only allow specific fields to be updated
+        ...(data.preferences && { preferences: data.preferences }),
         updatedAt: serverTimestamp(),
-      }, { merge: true });
+      };
+      
+      const userRef = doc(db, 'users', uid);
+      await retryOperation(async () => {
+        return await setDoc(userRef, sanitizedData, { merge: true });
+      });
     } catch (error) {
-      console.error('Error updating user profile:', error);
-      throw error;
+      const errorDetails = handleFirebaseError(error, 'UpdateUserProfile', { uid });
+      throw new Error(errorDetails.message);
     }
   };
 
   // Send password reset email
   const sendPasswordReset = async (email) => {
     try {
-      await firebaseSendPasswordResetEmail(auth, email);
+      await retryOperation(async () => {
+        return await firebaseSendPasswordResetEmail(auth, email);
+      });
     } catch (error) {
-      console.error('Password reset error:', error);
-      throw error;
+      const errorDetails = handleFirebaseError(error, 'PasswordReset', { email });
+      throw new Error(errorDetails.message);
     }
   };
 

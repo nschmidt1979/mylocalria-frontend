@@ -117,103 +117,129 @@ const Directory = () => {
     getUserLocation();
   }, []);
 
+  // Optimized query builder
+  const buildOptimizedQuery = (filters, lastDocument = null) => {
+    let constraints = [];
+    
+    // Apply filters with proper indexing support
+    if (filters.verifiedOnly) {
+      constraints.push(where('verified', '==', true));
+    }
+    if (filters.feeOnly) {
+      constraints.push(where('feeOnly', '==', true));
+    }
+    if (filters.minRating) {
+      constraints.push(where('averageRating', '>=', parseFloat(filters.minRating)));
+    }
+    if (filters.specializations?.length > 0) {
+      constraints.push(where('specializations', 'array-contains-any', filters.specializations));
+    }
+    if (filters.certifications?.length > 0) {
+      constraints.push(where('certifications', 'array-contains-any', filters.certifications));
+    }
+
+    // Add sorting - use single orderBy to avoid complex composite index requirements
+    constraints.push(orderBy('averageRating', 'desc'));
+    
+    // Add pagination
+    constraints.push(limit(RESULTS_PER_PAGE));
+    
+    if (lastDocument) {
+      constraints.push(startAfter(lastDocument));
+    }
+
+    return query(collection(db, 'state_adv_part_1_data'), ...constraints);
+  };
+
+  // Optimized data mapping with error handling
+  const mapAdvisorData = (docs) => {
+    return docs.map(doc => {
+      try {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          crd_number: data.crd_number || '',
+          primary_business_name: data.primary_business_name || '',
+          principal_office_address_1: data.principal_office_address_1 || '',
+          principal_office_address_2: data.principal_office_address_2 || '',
+          principal_office_city: data.principal_office_city || '',
+          principal_office_state: data.principal_office_state || '',
+          principal_office_postal_code: data.principal_office_postal_code || '',
+          principal_office_telephone_number: data.principal_office_telephone_number || '',
+          website_address: data.website_address || '',
+          status_effective_date: data.status_effective_date || '',
+          averageRating: data.averageRating || 0,
+          reviewCount: data.reviewCount || 0,
+          specializations: data.specializations || [],
+          certifications: data.certifications || [],
+          verified: data.verified || false,
+          feeOnly: data.feeOnly || false,
+          '5b1_how_many_employees_perform_investmen': data['5b1_how_many_employees_perform_investmen'] || 0,
+          '5f2_assets_under_management_total_number': data['5f2_assets_under_management_total_number'] || 0,
+          '5f2_assets_under_management_total_us_dol': data['5f2_assets_under_management_total_us_dol'] || 0,
+        };
+      } catch (error) {
+        console.error('Error mapping advisor data:', error);
+        return null;
+      }
+    }).filter(Boolean); // Remove any null entries
+  };
+
   useEffect(() => {
     const fetchAdvisors = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Build query based on filters
-        let advisorsQuery = query(collection(db, 'state_adv_part_1_data'));
-
-        // Apply filters from URL parameters
         const filters = getCurrentFilters();
-
-        // Add where clauses based on filters
-        if (filters.verifiedOnly) {
-          advisorsQuery = query(advisorsQuery, where('verified', '==', true));
-        }
-        if (filters.feeOnly) {
-          advisorsQuery = query(advisorsQuery, where('feeOnly', '==', true));
-        }
-        if (filters.minRating) {
-          advisorsQuery = query(advisorsQuery, where('averageRating', '>=', parseFloat(filters.minRating)));
-        }
-        if (filters.specializations?.length > 0) {
-          advisorsQuery = query(advisorsQuery, where('specializations', 'array-contains-any', filters.specializations));
-        }
-        if (filters.certifications?.length > 0) {
-          advisorsQuery = query(advisorsQuery, where('certifications', 'array-contains-any', filters.certifications));
-        }
-
-        // Add ordering and limit
-        advisorsQuery = query(
-          advisorsQuery,
-          orderBy('averageRating', 'desc'),
-          orderBy('reviewCount', 'desc'),
-          limit(RESULTS_PER_PAGE)
-        );
+        const advisorsQuery = buildOptimizedQuery(filters, lastDoc);
 
         const snapshot = await getDocs(advisorsQuery);
-        let advisorsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          // Only keep the selected fields
-          return {
-            id: doc.id,
-            crd_number: data.crd_number,
-            primary_business_name: data.primary_business_name,
-            principal_office_address_1: data.principal_office_address_1,
-            principal_office_address_2: data.principal_office_address_2,
-            principal_office_city: data.principal_office_city,
-            principal_office_state: data.principal_office_state,
-            principal_office_postal_code: data.principal_office_postal_code,
-            principal_office_telephone_number: data.principal_office_telephone_number,
-            website_address: data.website_address,
-            status_effective_date: data.status_effective_date,
-            '5b1_how_many_employees_perform_investmen': data['5b1_how_many_employees_perform_investmen'],
-            '5f2_assets_under_management_total_number': data['5f2_assets_under_management_total_number'],
-            '5f2_assets_under_management_total_us_dol': data['5f2_assets_under_management_total_us_dol'],
-          };
-        });
+        
+        if (snapshot.empty) {
+          setAdvisors([]);
+          setTotalResults(0);
+          setHasMore(false);
+          return;
+        }
 
-        // Filter by location if specified
+        let advisorsData = mapAdvisorData(snapshot.docs);
+
+        // Move server-side filtering where possible, keep client-side for complex operations
         if (filters.location) {
           try {
             const locationCoords = await geocodeAddress(filters.location);
-            advisorsData = filterAdvisorsByDistance(advisorsData, locationCoords, filters.radius);
+            advisorsData = filterAdvisorsByDistance(advisorsData, locationCoords, filters.radius || 50);
           } catch (err) {
             console.error('Error geocoding location:', err);
-            // Fall back to text-based filtering if geocoding fails
-            advisorsData = advisorsData.filter(advisor => 
-              advisor.location?.toLowerCase().includes(filters.location.toLowerCase())
-            );
+            setError('Unable to process location filter. Please try a different location.');
+            return;
           }
-        } else if (userLocation) {
-          // Use user's location if available and no location filter is specified
+        } else if (userLocation && filters.radius) {
           advisorsData = filterAdvisorsByDistance(advisorsData, userLocation, filters.radius);
         }
 
-        // Filter by search query if specified
+        // Text search filtering (consider moving to Algolia or similar for better performance)
         if (filters.query) {
           const queryLower = filters.query.toLowerCase();
           advisorsData = advisorsData.filter(advisor =>
-            advisor.name?.toLowerCase().includes(queryLower) ||
-            advisor.company?.toLowerCase().includes(queryLower) ||
+            advisor.primary_business_name?.toLowerCase().includes(queryLower) ||
             advisor.specializations?.some(spec => spec.toLowerCase().includes(queryLower)) ||
             advisor.certifications?.some(cert => cert.toLowerCase().includes(queryLower))
           );
         }
 
-        // Sort advisors
+        // Apply secondary sorting
         advisorsData = sortAdvisors(advisorsData, sortBy, userLocation);
 
-        setAdvisors(advisorsData);
+        setAdvisors(prev => lastDoc ? [...prev, ...advisorsData] : advisorsData);
         setTotalResults(advisorsData.length);
         setHasMore(snapshot.docs.length === RESULTS_PER_PAGE);
         setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+        
       } catch (err) {
         console.error('Error fetching advisors:', err);
-        setError('Failed to load advisors. Please try again later.');
+        setError('Failed to load advisors. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
@@ -293,6 +319,53 @@ const Directory = () => {
 
   const handleRemoveFromComparison = (advisorId) => {
     setComparisonAdvisors(prev => prev.filter(a => a.id !== advisorId));
+  };
+
+  // Load more advisors for pagination
+  const loadMoreAdvisors = async () => {
+    if (!hasMore || loading) return;
+    
+    try {
+      setLoading(true);
+      const filters = getCurrentFilters();
+      const advisorsQuery = buildOptimizedQuery(filters, lastDoc);
+      
+      const snapshot = await getDocs(advisorsQuery);
+      
+      if (!snapshot.empty) {
+        let newAdvisorsData = mapAdvisorData(snapshot.docs);
+        
+        // Apply same filtering as initial load
+        if (filters.location) {
+          const locationCoords = await geocodeAddress(filters.location);
+          newAdvisorsData = filterAdvisorsByDistance(newAdvisorsData, locationCoords, filters.radius || 50);
+        } else if (userLocation && filters.radius) {
+          newAdvisorsData = filterAdvisorsByDistance(newAdvisorsData, userLocation, filters.radius);
+        }
+        
+        if (filters.query) {
+          const queryLower = filters.query.toLowerCase();
+          newAdvisorsData = newAdvisorsData.filter(advisor =>
+            advisor.primary_business_name?.toLowerCase().includes(queryLower) ||
+            advisor.specializations?.some(spec => spec.toLowerCase().includes(queryLower)) ||
+            advisor.certifications?.some(cert => cert.toLowerCase().includes(queryLower))
+          );
+        }
+        
+        newAdvisorsData = sortAdvisors(newAdvisorsData, sortBy, userLocation);
+        
+        setAdvisors(prev => [...prev, ...newAdvisorsData]);
+        setHasMore(snapshot.docs.length === RESULTS_PER_PAGE);
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Error loading more advisors:', error);
+      setError('Failed to load more advisors. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveSearch = (savedSearch) => {
@@ -580,9 +653,7 @@ const Directory = () => {
             {hasMore && (
               <div className="flex justify-center mt-8">
                 <button
-                  onClick={() => {
-                    // Handle load more
-                  }}
+                  onClick={loadMoreAdvisors}
                   disabled={loading}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                 >
