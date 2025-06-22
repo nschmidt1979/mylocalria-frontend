@@ -93,13 +93,15 @@ const waCities = [
   'Richland'
 ];
 
-export const SearchFilters = ({ onSearch }) => {
+export const SearchFilters = ({ onSearch, onFilterError }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [locationInput, setLocationInput] = useState(searchParams.get('location') || '');
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [locationError, setLocationError] = useState(null);
+  const [filterErrors, setFilterErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [filters, setFilters] = useState({
     query: searchParams.get('q') || '',
     location: searchParams.get('location') || '',
@@ -145,31 +147,74 @@ export const SearchFilters = ({ onSearch }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const params = new URLSearchParams();
+    setIsSubmitting(true);
+    setFilterErrors({});
 
-    // Only add non-empty parameters
-    if (filters.query) params.set('q', filters.query);
-    if (filters.location) params.set('location', filters.location);
-    if (filters.radius !== '25') params.set('radius', filters.radius);
-    if (filters.minRating !== '0') params.set('minRating', filters.minRating);
-    if (filters.specializations.length > 0) params.set('specializations', filters.specializations.join(','));
-    if (filters.certifications.length > 0) params.set('certifications', filters.certifications.join(','));
-    if (filters.verifiedOnly) params.set('verifiedOnly', 'true');
-    if (filters.feeOnly) params.set('feeOnly', 'true');
-    
-    // New filter parameters
-    if (filters.assetsUnderManagement) params.set('assetsUnderManagement', filters.assetsUnderManagement);
-    if (filters.principalOfficeCity) params.set('principalOfficeCity', filters.principalOfficeCity);
-    if (filters.accountMinimum) params.set('accountMinimum', filters.accountMinimum);
-    if (filters.custodians.length > 0) params.set('custodians', filters.custodians.join(','));
-    if (filters.discretionaryAuthority) params.set('discretionaryAuthority', filters.discretionaryAuthority);
-    if (filters.fees.length > 0) params.set('fees', filters.fees.join(','));
-    if (filters.performanceFees) params.set('performanceFees', 'true');
-    if (filters.professionalDesignations.length > 0) params.set('professionalDesignations', filters.professionalDesignations.join(','));
+    try {
+      // Import validation service dynamically to avoid circular dependencies
+      const { filterValidationService } = await import('../../services/filterValidationService');
+      
+      // Validate filters before submitting
+      const validation = filterValidationService.validateFilters(filters);
+      
+      if (!validation.isValid) {
+        const errors = {};
+        validation.errors.forEach(error => {
+          errors[error.field] = error.message;
+        });
+        setFilterErrors(errors);
+        
+        if (onFilterError) {
+          onFilterError(validation.errors);
+        }
+        
+        setIsSubmitting(false);
+        return;
+      }
 
-    navigate(`/directory?${params.toString()}`);
+      // Check query complexity
+      const complexityCheck = filterValidationService.validateQueryComplexity(filters);
+      if (!complexityCheck.isValid) {
+        setFilterErrors({
+          general: 'Your search is too complex. Please reduce the number of active filters and try again.'
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const params = new URLSearchParams();
+
+      // Only add non-empty parameters
+      if (filters.query) params.set('q', filters.query);
+      if (filters.location) params.set('location', filters.location);
+      if (filters.radius !== '25') params.set('radius', filters.radius);
+      if (filters.minRating !== '0') params.set('minRating', filters.minRating);
+      if (filters.specializations.length > 0) params.set('specializations', filters.specializations.join(','));
+      if (filters.certifications.length > 0) params.set('certifications', filters.certifications.join(','));
+      if (filters.verifiedOnly) params.set('verifiedOnly', 'true');
+      if (filters.feeOnly) params.set('feeOnly', 'true');
+      
+      // New filter parameters
+      if (filters.assetsUnderManagement) params.set('assetsUnderManagement', filters.assetsUnderManagement);
+      if (filters.principalOfficeCity) params.set('principalOfficeCity', filters.principalOfficeCity);
+      if (filters.accountMinimum) params.set('accountMinimum', filters.accountMinimum);
+      if (filters.custodians.length > 0) params.set('custodians', filters.custodians.join(','));
+      if (filters.discretionaryAuthority) params.set('discretionaryAuthority', filters.discretionaryAuthority);
+      if (filters.fees.length > 0) params.set('fees', filters.fees.join(','));
+      if (filters.performanceFees) params.set('performanceFees', 'true');
+      if (filters.professionalDesignations.length > 0) params.set('professionalDesignations', filters.professionalDesignations.join(','));
+
+      navigate(`/directory?${params.toString()}`);
+    } catch (error) {
+      console.error('Error validating filters:', error);
+      setFilterErrors({
+        general: 'An error occurred while processing your search. Please try again.'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFilterChange = (key, value) => {
@@ -210,7 +255,27 @@ export const SearchFilters = ({ onSearch }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4">
-      <form onSubmit={handleSubmit}>
+      {/* Error Display */}
+      {Object.keys(filterErrors).length > 0 && (
+        <div id="filter-errors" className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md" role="alert">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Please correct the following errors:
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <ul className="list-disc pl-5 space-y-1">
+                  {Object.entries(filterErrors).map(([field, message]) => (
+                    <li key={field}>{message}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Search Query */}
           <div>
@@ -525,10 +590,24 @@ export const SearchFilters = ({ onSearch }) => {
           </button>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={isSubmitting}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-describedby={Object.keys(filterErrors).length > 0 ? "filter-errors" : undefined}
           >
-            <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
-            Apply Filters
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Searching...
+              </>
+            ) : (
+              <>
+                <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
+                Apply Filters
+              </>
+            )}
           </button>
         </div>
       </form>

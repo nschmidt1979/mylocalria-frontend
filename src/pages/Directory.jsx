@@ -44,6 +44,7 @@ import SearchResultsReviews from '../components/directory/SearchResultsReviews';
 import SearchResultsAnalytics from '../components/directory/SearchResultsAnalytics';
 import SaveSearchModal from '../components/directory/SaveSearchModal';
 import { db } from '../firebase';
+import { filterValidationService, FirebaseQueryError } from '../services/filterValidationService';
 
 const Directory = () => {
   const [searchParams] = useSearchParams();
@@ -128,15 +129,37 @@ const Directory = () => {
 
   useEffect(() => {
     const fetchAdvisors = async () => {
+      const startTime = Date.now();
+      
       try {
         setLoading(true);
         setError(null);
 
+        // Get and validate filters
+        const filters = getCurrentFilters();
+        
+        // Validate filter values
+        const validation = filterValidationService.validateFilters(filters);
+        if (!validation.isValid) {
+          const errorMessages = filterValidationService.getErrorMessages();
+          setError(`Filter validation failed: ${errorMessages.map(e => e.message).join(', ')}`);
+          setLoading(false);
+          return;
+        }
+
+        // Check query complexity
+        const complexityCheck = filterValidationService.validateQueryComplexity(filters);
+        if (!complexityCheck.isValid) {
+          setError(`Query too complex: ${complexityCheck.issues.join(', ')}`);
+          setLoading(false);
+          return;
+        }
+
+        // Optimize filter order for better performance
+        const optimizedFilters = filterValidationService.optimizeFilterOrder(filters);
+
         // Build query based on filters
         let advisorsQuery = query(collection(db, 'state_adv_part_1_data'));
-
-        // Apply filters from URL parameters
-        const filters = getCurrentFilters();
 
         // Add where clauses based on filters
         if (filters.verifiedOnly) {
@@ -288,9 +311,48 @@ const Directory = () => {
         setTotalResults(advisorsData.length);
         setHasMore(snapshot.docs.length === RESULTS_PER_PAGE);
         setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+
+        // Performance monitoring
+        const endTime = Date.now();
+        const performance = filterValidationService.measureQueryPerformance(
+          startTime, endTime, advisorsData.length, filters
+        );
+        
+        if (performance.isSlowQuery) {
+          console.warn('Slow query detected:', performance);
+        }
+
+        // Log performance metrics in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Query performance:', performance);
+        }
+
       } catch (err) {
         console.error('Error fetching advisors:', err);
-        setError('Failed to load advisors. Please try again later.');
+        
+        // Create detailed error for debugging
+        const queryInfo = {
+          filters: getCurrentFilters(),
+          timestamp: new Date().toISOString(),
+          errorType: err.name || 'Unknown'
+        };
+
+        if (err.code === 'failed-precondition' || err.code === 'invalid-argument') {
+          setError('Search filters are too complex. Please reduce the number of active filters and try again.');
+        } else if (err.code === 'permission-denied') {
+          setError('You do not have permission to access this data. Please sign in and try again.');
+        } else if (err.code === 'unavailable') {
+          setError('The service is temporarily unavailable. Please try again in a few moments.');
+        } else {
+          setError('Failed to load advisors. Please try again later.');
+        }
+
+        // Log detailed error for monitoring
+        console.error('Firebase query error:', new FirebaseQueryError(
+          `Query failed: ${err.message}`,
+          queryInfo,
+          err
+        ));
       } finally {
         setLoading(false);
       }
