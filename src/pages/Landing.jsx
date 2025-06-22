@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import AdvisorCard from '../components/advisors/AdvisorCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SEOHelmet from '../components/common/SEOHelmet';
+import { generateLandingPageSEO } from '../utils/seoUtils';
 
 const Landing = () => {
   const [featuredAdvisors, setFeaturedAdvisors] = useState([]);
@@ -39,29 +40,18 @@ const Landing = () => {
     fetchFeaturedAdvisors();
   }, []);
 
+  const seoData = generateLandingPageSEO();
+
   return (
     <div className="min-h-screen">
       <SEOHelmet
-        title="Find Your Perfect Financial Advisor"
-        description="Connect with trusted, fiduciary financial advisors in your area. Read verified reviews, compare services, fees, and credentials to make an informed decision."
-        keywords="financial advisor, investment advisor, wealth management, fiduciary, financial planning, RIA, registered investment advisor"
-        url="/"
-        type="website"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          "name": "MyLocalRIA",
-          "url": "https://mylocalria.com",
-          "description": "Find and connect with trusted financial advisors",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://mylocalria.com/directory?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-          }
-        }}
-        breadcrumbs={[
-          { name: "Home", url: "/" }
-        ]}
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        url={seoData.url}
+        type={seoData.type}
+        structuredData={seoData.structuredData}
+        breadcrumbs={seoData.breadcrumbs}
       />
       
       {/* Hero Section */}
