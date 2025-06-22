@@ -1,0 +1,100 @@
+Product Specification Document: MyLocalRIA.com (V1 Launch)
+________________________________________
+📆 Project Overview
+MyLocalRIA.com is a web platform to help Washington State residents evaluate and connect with local Registered Investment Advisers (RIAs). It aggregates official data from Form ADV filings and allows verified clients to post reviews. The initial launch will focus on core search, profile, review, and admin functionality. Monetization will follow a freemium B2C model with paid B2B tools and local advertising.
+________________________________________
+📊 Core Functionality
+•	Display investment adviser profiles using Form ADV Part 1, 2A, and 2B data
+•	Public directory and map-based search of WA State RIAs
+•	RIA profile claiming with document upload and SMS verification
+•	Verified client reviews with star ratings and free text
+•	Adviser replies to reviews (public)
+•	Admin dashboard for moderation and claim approvals
+•	Messaging between users and claimed RIAs
+________________________________________
+🔄 Data Sources
+Firebase Database Tables: - state_adv_part_1_data - adv_part_2_data - adv_part_2b_data - adviser_logos - Future tables: reviews, messages, users, claims, admin_logs
+________________________________________
+🔢 Features (Prioritized)
+✅ Launch Critical
+1.	Adviser profile pages (auto-populated + editable section)
+2.	Public search + filter + map pins
+3.	Review system with:
+o	Star rating (1-5)
+o	Optional aspect ratings: Responsiveness, Clarity, Trustworthiness, Professionalism
+o	Free-text + media upload
+4.	Adviser review replies
+5.	RIA profile claiming with:
+o	SMS verification
+o	Document upload (manual admin approval)
+6.	Messaging system (from users to RIAs)
+7.	Admin dashboard (moderation, claim review, manual data overrides)
+⏳ Post-Launch
+•	User favorites/follow list with review/reply notifications
+•	Profile analytics for RIAs
+•	Paid sponsor badges or ads
+•	Calendly integration for bookings
+•	Mobile app (iOS/Android)
+________________________________________
+📈 Profile Page Layout
+Header
+•	primary_business_name
+•	logo_url
+•	Star rating & number of reviews
+•	Message Adviser button
+•	Verification badge if profile claimed and approved
+Overview
+•	crd_number
+•	status_effective_date
+•	5b1_how_many_employees_perform_investmen
+•	5f2_assets_under_management_total_number
+•	5f2_assets_under_management_total_us_dol
+•	account_minimum, discretionary_authority, performance_fees, performance_fee_rate
+Investment Details
+•	investment_summary
+•	fees, fee_notes
+•	custodians
+Contact Info
+•	website_address
+•	principal_office_telephone_number
+•	Full address from principal_office_*
+•	Embedded map (Geo if available)
+Compliance
+•	disciplinary_disclosures, other_business_activities
+Team (Optional Section)
+From adv_part_2b_data: rep_name, education, experience, designations, etc.
+Supplementary Section (RIA editable)
+•	Short free-text field for clarifying notes or service descriptions
+Reviews Section
+•	List of user reviews with replies
+•	Reviewer name (“John D.”) + verification badge if documentation uploaded
+________________________________________
+🤖 User Account Requirements
+No Login Required: - Browse adviser profiles - Search, filter, and map tools - Read reviews
+Login Required (OAuth or Email+SMS): - Leave reviews (with optional media) - Message advisers - Follow/favorite advisers - Upload verification docs for reviews
+________________________________________
+🔧 Technical Requirements
+•	Frontend: Firebase Hosting + Tailwind UI (React or HTML template)
+•	Backend: Firebase Functions + Firestore DB
+•	Auth: Firebase Auth (OAuth + Phone)
+•	File Uploads: Firebase Storage (verification docs, logos, media)
+•	Map Integration: Google Maps API (marker clustering + filters)
+•	Notifications: Firebase Cloud Messaging (for follows/replies)
+________________________________________
+🔐 Admin Dashboard
+•	View/edit adviser claims
+•	Approve/reject uploads
+•	Flag/remove reviews
+•	Manual data overrides for firm profile data
+•	Logs of admin actions (timestamp + user ID)
+________________________________________
+✅ Success Criteria
+•	90% of WA-based SEC/state RIAs listed with profiles
+•	50+ adviser claims approved within 60 days
+•	100+ user reviews posted within 90 days
+•	10% monthly return visitors
+•	<5% flagged reviews for abuse
+________________________________________
+Document Version: V1.0
+Prepared by: ChatGPT (w/ Noah Schmidt)
+Date: June 15, 2025

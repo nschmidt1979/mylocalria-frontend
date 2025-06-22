@@ -1,0 +1,69 @@
+import { Link } from 'react-router-dom';
+
+const Footer = () => {
+  return (
+    <footer className="bg-gray-800">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          <div className="col-span-2">
+            <div className="flex items-center">
+              <i className="fas fa-chart-line text-2xl text-white mr-2"></i>
+              <span className="text-xl font-display font-bold text-white">MyLocalRIA</span>
+            </div>
+            <p className="mt-4 text-sm text-gray-300">
+              Helping Washington investors find and evaluate local registered investment advisers since 2023.
+            </p>
+            <div className="mt-4 flex space-x-6">
+              <a href="#" className="text-gray-400 hover:text-white">
+                <i className="fab fa-twitter"></i>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white">
+                <i className="fab fa-linkedin"></i>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white">
+                <i className="fab fa-facebook"></i>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-100 tracking-wider uppercase">Resources</h3>
+            <ul className="mt-4 space-y-2">
+              <li><Link to="/ria-101" className="text-sm text-gray-400 hover:text-white">RIA 101 Guide</Link></li>
+              <li><Link to="/fee-calculator" className="text-sm text-gray-400 hover:text-white">Fee Calculator</Link></li>
+              <li><Link to="/interview-questions" className="text-sm text-gray-400 hover:text-white">Interview Questions</Link></li>
+              <li><Link to="/glossary" className="text-sm text-gray-400 hover:text-white">Glossary</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-100 tracking-wider uppercase">Company</h3>
+            <ul className="mt-4 space-y-2">
+              <li><Link to="/about" className="text-sm text-gray-400 hover:text-white">About</Link></li>
+              <li><Link to="/team" className="text-sm text-gray-400 hover:text-white">Team</Link></li>
+              <li><Link to="/methodology" className="text-sm text-gray-400 hover:text-white">Methodology</Link></li>
+              <li><Link to="/contact" className="text-sm text-gray-400 hover:text-white">Contact</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-100 tracking-wider uppercase">Legal</h3>
+            <ul className="mt-4 space-y-2">
+              <li><Link to="/privacy" className="text-sm text-gray-400 hover:text-white">Privacy</Link></li>
+              <li><Link to="/terms" className="text-sm text-gray-400 hover:text-white">Terms</Link></li>
+              <li><Link to="/disclosures" className="text-sm text-gray-400 hover:text-white">Disclosures</Link></li>
+              <li><Link to="/advisor-guidelines" className="text-sm text-gray-400 hover:text-white">Advisor Guidelines</Link></li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between">
+          <p className="text-sm text-gray-400">
+            &copy; {new Date().getFullYear()} MyLocalRIA. All rights reserved.
+          </p>
+          <p className="text-sm text-gray-400 mt-4 md:mt-0">
+            Not affiliated with the SEC or Washington State DFI. Data from public sources reviewed quarterly.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer; 

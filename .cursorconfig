@@ -1,0 +1,20 @@
+{
+  "$schema": "https://app.cursor.sh/cursor.schema.json",
+  "defaultModel": "gpt-4.1",
+  "modelOverrides": {
+    "**/*.test.{js,jsx,ts,tsx}": "gpt-4.1",
+    "**/*.spec.{js,jsx,ts,tsx}": "gpt-4.1",
+    "**/*.md": "claude-4-sonnet",
+    "**/firebase*.js": "gemini-2.5-flash-preview-05-20",
+    "**/tailwind.config.js": "gemini-2.5-flash-preview-05-20",
+    "**/*.config.{js,cjs,ts}": "gemini-2.5-flash-preview-05-20",
+    "**/src/components/**": "gpt-4.1",
+    "**/src/hooks/**": "gpt-4.1",
+    "**/src/pages/**": "gpt-4.1",
+    "**/src/**/*.{jsx,tsx}": "gpt-4.1",
+    "**/*.json": "o3",
+    "**/docs/**": "claude-4-sonnet",
+    "**/*.env": "o3"
+  },
+  "agentModel": "claude-4-sonnet"
+}

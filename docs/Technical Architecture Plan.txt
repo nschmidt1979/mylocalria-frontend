@@ -1,0 +1,69 @@
+Technical Architecture Plan: MyLocalRIA.com
+🔧 Development Approach
+
+Platform Foundation
+- Backend: Firebase (Firestore, Auth, Storage, Cloud Functions)
+- Frontend: Cursor
+- AI Assistant: Used in Cursor to scaffold components, validate logic, and accelerate UI building
+
+Methodology
+- Use a MVP-first approach: launch with essential features only (as listed under “Launch Critical”)
+- Work in weekly sprints, each targeting a self-contained feature
+- Leverage Firebase’s built-in tools to reduce dev workload: Auth, Hosting, Firestore rules, etc.
+
+⚠️ Potential Challenges & Solutions
+- Data sync from Form ADV: Preload from your database; defer live updates/scraping for now
+- Verification uploads (PDFs, etc.): Use Firebase Storage with security rules for admin-only access
+- User review abuse / spam: Require login, store metadata, add moderation queue
+- Map performance with many pins: Use marker clustering via Google Maps JS API
+- Search scalability: Use Algolia later, but start with Firestore composite indexes
+- UI polish: Use AI in Curson to generate clean Tailwind layouts quickly
+👥 Resource Requirements
+- You (Founder/PM): Make feature decisions, test features, approve claims
+- Frontend Dev: Build profile pages, search UI, review forms
+- Firebase/Backend Dev: Set up Auth, DB rules, claim logic, admin tools
+- Designer (Optional): Help with logos, map pins, mobile layouts
+- Compliance Advisor (Optional): Validate display of ADV info is okay
+🚧 Step-by-Step Development Plan
+🏗️ PHASE 1: Infrastructure & Database Setup (Week 1–2)
+- Set up Firebase project: Auth, Firestore, Functions, Storage
+- Import Form ADV data to Firestore (your cleaned version)
+- Define Firestore collections: users, advisers, reviews, claims, messages, admin_logs
+- Set up Firestore security rules (start read-open, write-auth-only)
+🔍 PHASE 2: Public Directory & Profile Pages (Week 2–4)
+- Build public search page (filters: city, AUM, etc.)
+- Display results as cards and Google Maps pins
+- Build adviser profile page with static data (as defined in spec)
+- Add claimed/unclaimed logic + public contact button
+✍️ PHASE 3: Reviews & Ratings (Week 4–5)
+- Auth: OAuth + phone verification
+- Review form with star + aspects + free text + media upload
+- Reviewer identity formatting (“Jane R.”), verification upload optional
+- Review list display with sorting/filtering
+- Admin ability to flag/remove reviews
+✅ PHASE 4: Adviser Claiming (Week 6–7)
+- Profile: “Claim this adviser” button
+- Claim form with: SMS verification, Business documentation upload
+- Admin dashboard to view/approve claims
+- Claimed adviser can add supplementary text & reply to reviews
+💬 PHASE 5: Messaging & Admin Tools (Week 8–9)
+- Build “Message this Adviser” form
+- Firestore-triggered messaging record (no real-time chat yet)
+- Admin: approve claims, moderate reviews, override data
+- Logs of admin actions (timestamp, user_id)
+🚀 PHASE 6: QA + Launch Prep (Week 10–11)
+- Test all edge cases (unclaimed, flagged, bad uploads, spam)
+- Load test map and search
+- Finalize UI polish (logos, layout, responsiveness)
+- Configure SEO, Google Analytics, sitemap
+🧠 Strategy Recommendations
+- Use Cursor + AI for UI builds
+- Avoid real-time or advanced features at launch
+- Moderate claims yourself to build early relationships
+- Tag Firebase Functions early for scaling
+- Defer mobile app development
+✅ Launch Target Metrics
+- 50 adviser claims within 60 days
+- 100 reviews in first 90 days
+- 10% return visitor rate
+- <5% flagged review rate
