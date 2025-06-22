@@ -25,74 +25,6 @@ const certifications = [
   'CRPC',
 ];
 
-// Professional designations for rep_professional_designations field
-const professionalDesignations = [
-  'CFA',
-  'CFP',
-  'ChFC',
-  'CLU',
-  'CPA',
-  'PFS',
-  'AAMS',
-  'CRPC',
-  'CIMA',
-  'CPWA',
-  'RMA',
-  'FRM',
-  'CEBS',
-  'AEP',
-  'CAP',
-  'CWS'
-];
-
-// Common custodians for filtering
-const custodianOptions = [
-  'Charles Schwab',
-  'Fidelity',
-  'TD Ameritrade',
-  'E*TRADE',
-  'Interactive Brokers',
-  'Vanguard',
-  'Pershing',
-  'LPL Financial',
-  'Raymond James',
-  'Ameriprise'
-];
-
-// Common fee structures
-const feeStructures = [
-  'Assets Under Management (AUM)',
-  'Hourly',
-  'Project-Based',
-  'Retainer',
-  'Commission',
-  'Hybrid'
-];
-
-// WA Cities for principal_office_city filter
-const waCities = [
-  'Seattle',
-  'Spokane',
-  'Tacoma',
-  'Vancouver',
-  'Bellevue',
-  'Kent',
-  'Everett',
-  'Renton',
-  'Yakima',
-  'Federal Way',
-  'Spokane Valley',
-  'Bellingham',
-  'Kennewick',
-  'Auburn',
-  'Pasco',
-  'Marysville',
-  'Lakewood',
-  'Redmond',
-  'Shoreline',
-  'Richland'
-];
-
 export const SearchFilters = ({ onSearch }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -109,15 +41,6 @@ export const SearchFilters = ({ onSearch }) => {
     certifications: searchParams.get('certifications')?.split(',') || [],
     verifiedOnly: searchParams.get('verifiedOnly') === 'true',
     feeOnly: searchParams.get('feeOnly') === 'true',
-    // New filters for the test scope
-    assetsUnderManagement: searchParams.get('assetsUnderManagement') || '',
-    principalOfficeCity: searchParams.get('principalOfficeCity') || '',
-    accountMinimum: searchParams.get('accountMinimum') || '',
-    custodians: searchParams.get('custodians')?.split(',') || [],
-    discretionaryAuthority: searchParams.get('discretionaryAuthority') || '',
-    fees: searchParams.get('fees')?.split(',') || [],
-    performanceFees: searchParams.get('performanceFees') === 'true',
-    professionalDesignations: searchParams.get('professionalDesignations')?.split(',') || [],
   });
 
   const handleGetCurrentLocation = async () => {
@@ -158,16 +81,6 @@ export const SearchFilters = ({ onSearch }) => {
     if (filters.certifications.length > 0) params.set('certifications', filters.certifications.join(','));
     if (filters.verifiedOnly) params.set('verifiedOnly', 'true');
     if (filters.feeOnly) params.set('feeOnly', 'true');
-    
-    // New filter parameters
-    if (filters.assetsUnderManagement) params.set('assetsUnderManagement', filters.assetsUnderManagement);
-    if (filters.principalOfficeCity) params.set('principalOfficeCity', filters.principalOfficeCity);
-    if (filters.accountMinimum) params.set('accountMinimum', filters.accountMinimum);
-    if (filters.custodians.length > 0) params.set('custodians', filters.custodians.join(','));
-    if (filters.discretionaryAuthority) params.set('discretionaryAuthority', filters.discretionaryAuthority);
-    if (filters.fees.length > 0) params.set('fees', filters.fees.join(','));
-    if (filters.performanceFees) params.set('performanceFees', 'true');
-    if (filters.professionalDesignations.length > 0) params.set('professionalDesignations', filters.professionalDesignations.join(','));
 
     navigate(`/directory?${params.toString()}`);
   };
@@ -195,16 +108,7 @@ export const SearchFilters = ({ onSearch }) => {
       certifications: [],
       verifiedOnly: false,
       feeOnly: false,
-      assetsUnderManagement: '',
-      principalOfficeCity: '',
-      accountMinimum: '',
-      custodians: [],
-      discretionaryAuthority: '',
-      fees: [],
-      performanceFees: false,
-      professionalDesignations: [],
     });
-    setLocationInput('');
     navigate('/directory');
   };
 
@@ -269,72 +173,6 @@ export const SearchFilters = ({ onSearch }) => {
             )}
           </div>
 
-          {/* Principal Office City - NEW FILTER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Principal Office City</label>
-            <select
-              value={filters.principalOfficeCity}
-              onChange={(e) => handleFilterChange('principalOfficeCity', e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            >
-              <option value="">Any City</option>
-              {waCities.map((city) => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Assets Under Management - NEW FILTER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Assets Under Management</label>
-            <select
-              value={filters.assetsUnderManagement}
-              onChange={(e) => handleFilterChange('assetsUnderManagement', e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            >
-              <option value="">Any Amount</option>
-              <option value="0-10000000">Under $10M</option>
-              <option value="10000000-50000000">$10M - $50M</option>
-              <option value="50000000-100000000">$50M - $100M</option>
-              <option value="100000000-500000000">$100M - $500M</option>
-              <option value="500000000-1000000000">$500M - $1B</option>
-              <option value="1000000000+">Over $1B</option>
-            </select>
-          </div>
-
-          {/* Account Minimum - NEW FILTER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Account Minimum</label>
-            <select
-              value={filters.accountMinimum}
-              onChange={(e) => handleFilterChange('accountMinimum', e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            >
-              <option value="">Any Minimum</option>
-              <option value="0-25000">Under $25K</option>
-              <option value="25000-100000">$25K - $100K</option>
-              <option value="100000-250000">$100K - $250K</option>
-              <option value="250000-500000">$250K - $500K</option>
-              <option value="500000-1000000">$500K - $1M</option>
-              <option value="1000000+">Over $1M</option>
-            </select>
-          </div>
-
-          {/* Discretionary Authority - NEW FILTER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Discretionary Authority</label>
-            <select
-              value={filters.discretionaryAuthority}
-              onChange={(e) => handleFilterChange('discretionaryAuthority', e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            >
-              <option value="">Any Authority Type</option>
-              <option value="true">Discretionary</option>
-              <option value="false">Non-Discretionary</option>
-              <option value="both">Both</option>
-            </select>
-          </div>
-
           {/* Radius */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Distance</label>
@@ -365,73 +203,10 @@ export const SearchFilters = ({ onSearch }) => {
             </select>
           </div>
 
-          {/* Custodians - NEW FILTER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Custodians</label>
-            <div className="mt-1 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
-              {custodianOptions.map((custodian) => (
-                <div key={custodian} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`custodian-${custodian}`}
-                    checked={filters.custodians.includes(custodian)}
-                    onChange={() => handleMultiSelect('custodians', custodian)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor={`custodian-${custodian}`} className="ml-2 text-sm text-gray-700">
-                    {custodian}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Fee Structures - NEW FILTER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Fee Structure</label>
-            <div className="mt-1 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
-              {feeStructures.map((fee) => (
-                <div key={fee} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`fee-${fee}`}
-                    checked={filters.fees.includes(fee)}
-                    onChange={() => handleMultiSelect('fees', fee)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor={`fee-${fee}`} className="ml-2 text-sm text-gray-700">
-                    {fee}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Professional Designations - NEW FILTER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Professional Designations</label>
-            <div className="mt-1 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
-              {professionalDesignations.map((designation) => (
-                <div key={designation} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`designation-${designation}`}
-                    checked={filters.professionalDesignations.includes(designation)}
-                    onChange={() => handleMultiSelect('professionalDesignations', designation)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor={`designation-${designation}`} className="ml-2 text-sm text-gray-700">
-                    {designation}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Specializations */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Specializations</label>
-            <div className="mt-1 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
+            <div className="mt-1 max-h-32 overflow-y-auto">
               {specializations.map((spec) => (
                 <div key={spec} className="flex items-center">
                   <input
@@ -452,7 +227,7 @@ export const SearchFilters = ({ onSearch }) => {
           {/* Certifications */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Certifications</label>
-            <div className="mt-1 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
+            <div className="mt-1 max-h-32 overflow-y-auto">
               {certifications.map((cert) => (
                 <div key={cert} className="flex items-center">
                   <input
@@ -472,7 +247,7 @@ export const SearchFilters = ({ onSearch }) => {
 
           {/* Additional Options */}
           <div className="sm:col-span-2">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -497,38 +272,19 @@ export const SearchFilters = ({ onSearch }) => {
                   Fee-Only Advisors
                 </label>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="performanceFees"
-                  checked={filters.performanceFees}
-                  onChange={(e) => handleFilterChange('performanceFees', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="performanceFees" className="ml-2 text-sm text-gray-700">
-                  Performance Fees
-                </label>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-6 flex justify-between">
+        {/* Clear Filters */}
+        <div className="mt-4 flex justify-end">
           <button
             type="button"
             onClick={clearFilters}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            <XMarkIcon className="h-4 w-4 mr-2" />
-            Clear All Filters
-          </button>
-          <button
-            type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
-            Apply Filters
+            <XMarkIcon className="h-4 w-4 mr-1" />
+            Clear Filters
           </button>
         </div>
       </form>

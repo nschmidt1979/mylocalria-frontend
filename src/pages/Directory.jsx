@@ -98,6 +98,15 @@ const Directory = () => {
       certifications: searchParams.get('certifications')?.split(','),
       verifiedOnly: searchParams.get('verifiedOnly') === 'true',
       feeOnly: searchParams.get('feeOnly') === 'true',
+      // New filters for the test scope
+      assetsUnderManagement: searchParams.get('assetsUnderManagement'),
+      principalOfficeCity: searchParams.get('principalOfficeCity'),
+      accountMinimum: searchParams.get('accountMinimum'),
+      custodians: searchParams.get('custodians')?.split(','),
+      discretionaryAuthority: searchParams.get('discretionaryAuthority'),
+      fees: searchParams.get('fees')?.split(','),
+      performanceFees: searchParams.get('performanceFees') === 'true',
+      professionalDesignations: searchParams.get('professionalDesignations')?.split(','),
     };
   };
 
@@ -145,6 +154,55 @@ const Directory = () => {
         if (filters.certifications?.length > 0) {
           advisorsQuery = query(advisorsQuery, where('certifications', 'array-contains-any', filters.certifications));
         }
+        
+        // NEW FILTER CONDITIONS
+        if (filters.principalOfficeCity) {
+          advisorsQuery = query(advisorsQuery, where('principal_office_city', '==', filters.principalOfficeCity));
+        }
+        if (filters.assetsUnderManagement) {
+          const [min, max] = filters.assetsUnderManagement.includes('-') 
+            ? filters.assetsUnderManagement.split('-').map(v => v === '+' ? Infinity : parseFloat(v))
+            : [parseFloat(filters.assetsUnderManagement.replace('+', '')), Infinity];
+          
+          if (max === Infinity) {
+            advisorsQuery = query(advisorsQuery, where('5f2_assets_under_management_total_us_dol', '>=', min));
+          } else {
+            advisorsQuery = query(advisorsQuery, 
+              where('5f2_assets_under_management_total_us_dol', '>=', min),
+              where('5f2_assets_under_management_total_us_dol', '<', max)
+            );
+          }
+        }
+        if (filters.accountMinimum) {
+          const [min, max] = filters.accountMinimum.includes('-') 
+            ? filters.accountMinimum.split('-').map(v => v === '+' ? Infinity : parseFloat(v))
+            : [parseFloat(filters.accountMinimum.replace('+', '')), Infinity];
+          
+          if (max === Infinity) {
+            advisorsQuery = query(advisorsQuery, where('account_minimum', '>=', min));
+          } else {
+            advisorsQuery = query(advisorsQuery, 
+              where('account_minimum', '>=', min),
+              where('account_minimum', '<', max)
+            );
+          }
+        }
+        if (filters.custodians?.length > 0) {
+          advisorsQuery = query(advisorsQuery, where('custodians', 'array-contains-any', filters.custodians));
+        }
+        if (filters.discretionaryAuthority && filters.discretionaryAuthority !== 'both') {
+          const hasDiscretionary = filters.discretionaryAuthority === 'true';
+          advisorsQuery = query(advisorsQuery, where('discretionary_authority', '==', hasDiscretionary));
+        }
+        if (filters.fees?.length > 0) {
+          advisorsQuery = query(advisorsQuery, where('fees', 'array-contains-any', filters.fees));
+        }
+        if (filters.performanceFees) {
+          advisorsQuery = query(advisorsQuery, where('performance_fees', '==', true));
+        }
+        if (filters.professionalDesignations?.length > 0) {
+          advisorsQuery = query(advisorsQuery, where('rep_professional_designations', 'array-contains-any', filters.professionalDesignations));
+        }
 
         // Add ordering and limit
         advisorsQuery = query(
@@ -157,7 +215,7 @@ const Directory = () => {
         const snapshot = await getDocs(advisorsQuery);
         let advisorsData = snapshot.docs.map(doc => {
           const data = doc.data();
-          // Only keep the selected fields
+          // Keep all the required fields for filtering and display
           return {
             id: doc.id,
             crd_number: data.crd_number,
@@ -173,6 +231,25 @@ const Directory = () => {
             '5b1_how_many_employees_perform_investmen': data['5b1_how_many_employees_perform_investmen'],
             '5f2_assets_under_management_total_number': data['5f2_assets_under_management_total_number'],
             '5f2_assets_under_management_total_us_dol': data['5f2_assets_under_management_total_us_dol'],
+            // NEW FIELDS for filter testing
+            account_minimum: data.account_minimum,
+            custodians: data.custodians,
+            discretionary_authority: data.discretionary_authority,
+            fees: data.fees,
+            performance_fees: data.performance_fees,
+            rep_professional_designations: data.rep_professional_designations,
+            // Additional fields for enhanced functionality
+            averageRating: data.averageRating || 0,
+            reviewCount: data.reviewCount || 0,
+            name: data.primary_business_name,
+            company: data.primary_business_name,
+            location: `${data.principal_office_city}, ${data.principal_office_state}`,
+            specializations: data.specializations || [],
+            certifications: data.certifications || [],
+            verified: data.verified || false,
+            feeOnly: data.feeOnly || false,
+            latitude: data.latitude,
+            longitude: data.longitude,
           };
         });
 
