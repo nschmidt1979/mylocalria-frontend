@@ -1,0 +1,406 @@
+{
+  "info": {
+    "name": "MyLocalRIA Backend API",
+    "description": "Collection for testing the MyLocalRIA backend API with Firebase authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "firebaseIdToken",
+      "value": "YOUR_FIREBASE_ID_TOKEN_HERE",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{firebaseIdToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check (No Auth)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication Tests",
+      "item": [
+        {
+          "name": "Test Endpoint Without Auth (Should Fail)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2a_data/123456",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2a_data", "123456"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Endpoint With Invalid Token (Should Fail)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "invalid-token-12345",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2a_data/123456",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2a_data", "123456"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ADV Part 2A - POST",
+      "item": [
+        {
+          "name": "Upsert ADV Part 2A - Valid Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crd_number\": \"123456\",\n  \"rep_name\": \"John Doe\",\n  \"data\": {\n    \"firm_name\": \"Doe Financial Advisors\",\n    \"aum\": 50000000,\n    \"year_founded\": 2010,\n    \"services\": [\"Investment Advisory\", \"Financial Planning\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upsert_adv_part_2_data",
+              "host": ["{{baseUrl}}"],
+              "path": ["upsert_adv_part_2_data"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upsert ADV Part 2A - Missing CRD Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rep_name\": \"John Doe\",\n  \"data\": {\n    \"firm_name\": \"Doe Financial Advisors\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upsert_adv_part_2_data",
+              "host": ["{{baseUrl}}"],
+              "path": ["upsert_adv_part_2_data"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upsert ADV Part 2A - Invalid CRD Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crd_number\": \"not-a-number\",\n  \"rep_name\": \"John Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upsert_adv_part_2_data",
+              "host": ["{{baseUrl}}"],
+              "path": ["upsert_adv_part_2_data"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upsert ADV Part 2A - Missing Rep Name",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crd_number\": \"123456\",\n  \"data\": {\n    \"firm_name\": \"Doe Financial Advisors\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upsert_adv_part_2_data",
+              "host": ["{{baseUrl}}"],
+              "path": ["upsert_adv_part_2_data"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ADV Part 2B - POST",
+      "item": [
+        {
+          "name": "Upsert ADV Part 2B - Valid Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crd_number\": \"789012\",\n  \"rep_name\": \"Jane Smith\",\n  \"data\": {\n    \"rep_id\": \"REP001\",\n    \"education\": \"MBA Finance\",\n    \"experience_years\": 15,\n    \"specializations\": [\"Retirement Planning\", \"Tax Strategy\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upsert_adv_part_2b_data",
+              "host": ["{{baseUrl}}"],
+              "path": ["upsert_adv_part_2b_data"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upsert ADV Part 2B - Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crd_number\": \"\",\n  \"rep_name\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upsert_adv_part_2b_data",
+              "host": ["{{baseUrl}}"],
+              "path": ["upsert_adv_part_2b_data"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ADV Part 2A - GET",
+      "item": [
+        {
+          "name": "Get ADV Part 2A by CRD - Valid",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2a_data/123456",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2a_data", "123456"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get ADV Part 2A by CRD - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2a_data/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2a_data", "999999"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get ADV Part 2A by CRD - Invalid CRD",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2a_data/invalid",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2a_data", "invalid"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get ADV Part 2A by Rep ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2a_data/rep/REP001",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2a_data", "rep", "REP001"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ADV Part 2B - GET",
+      "item": [
+        {
+          "name": "Get ADV Part 2B by CRD - Valid",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2b_data/789012",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2b_data", "789012"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get ADV Part 2B by CRD - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2b_data/888888",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2b_data", "888888"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get ADV Part 2B by Rep ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/adv_part_2b_data/rep/REP001",
+              "host": ["{{baseUrl}}"],
+              "path": ["adv_part_2b_data", "rep", "REP001"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "404 Endpoint Test",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/non-existent-endpoint",
+          "host": ["{{baseUrl}}"],
+          "path": ["non-existent-endpoint"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// You can add a pre-request script here to automatically",
+          "// fetch a Firebase ID token if you have a test account",
+          "",
+          "// Example:",
+          "// pm.sendRequest({",
+          "//     url: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=YOUR_API_KEY',",
+          "//     method: 'POST',",
+          "//     header: {",
+          "//         'Content-Type': 'application/json'",
+          "//     },",
+          "//     body: {",
+          "//         mode: 'raw',",
+          "//         raw: JSON.stringify({",
+          "//             email: 'test@example.com',",
+          "//             password: 'testpassword',",
+          "//             returnSecureToken: true",
+          "//         })",
+          "//     }",
+          "// }, function (err, res) {",
+          "//     if (!err) {",
+          "//         var jsonData = res.json();",
+          "//         pm.collectionVariables.set('firebaseIdToken', jsonData.idToken);",
+          "//     }",
+          "// });"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test scripts that run after each request",
+          "",
+          "// Check response time",
+          "pm.test(\"Response time is less than 1000ms\", function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+          "});",
+          "",
+          "// Check that response is JSON",
+          "pm.test(\"Response has JSON body\", function () {",
+          "    pm.response.to.have.header(\"Content-Type\", /application\\/json/);",
+          "    pm.response.to.be.json;",
+          "});"
+        ]
+      }
+    }
+  ]
+}
