@@ -1,0 +1,575 @@
+# MyLocalRIA Project Reorganization Log
+Generated on: ${new Date().toISOString()}
+
+## Project Overview
+- Stack: React + Firebase + Vite + Tailwind CSS
+- Type: Financial Advisor Directory and Review Platform
+
+## Initial Audit Started
+
+## 🔍 Audit Findings
+
+### 1. Misplaced Files
+- ✅ `src/AdviserProfile.jsx` - Should be in `src/pages/` directory with other page components
+- ✅ `firebase.json` and `cors.json` - Should be in a config directory
+- ✅ `serviceAccountKey.json` - Should be in a secure location and added to .gitignore
+- ✅ Backend folder appears empty in workspace (might be nested in frontend based on layout)
+
+### 2. Duplicate/Redundant Files
+- ✅ `src/components/search/SearchFilters.jsx` vs `src/components/directory/SearchFilters.jsx` - Both exist, need to check which is used
+- ✅ `SearchExport.jsx` and `SearchResultsExport.jsx` - Similar functionality, might be redundant
+- ✅ Naming inconsistency: "Adviser" vs "Advisor" throughout the codebase
+
+### 3. Overly Complex Organization
+- ✅ Directory.jsx imports 44+ components from the directory folder - suggests over-componentization
+- ✅ Many search-related components with overlapping functionality:
+  - SearchResults* components (7 different ones)
+  - Search* components (20+ different ones)
+  - Could be consolidated into fewer, more focused components
+
+### 4. Security Concerns
+- ✅ `serviceAccountKey.json` in root - should never be committed to version control
+- ✅ Firebase credentials might be exposed
+
+### 5. Documentation Scattered
+- ✅ Multiple documentation files in different formats (RTF, TXT, MD)
+- ✅ READMEs in multiple locations
+- ✅ Test documentation mixed with implementation docs
+
+### 6. Testing Files Location
+- ✅ Test files are in `backend/tests/` but backend appears to be inside frontend folder
+- ✅ No test files found for frontend components
+
+### 7. Unused Files (Potential)
+- Need to verify if all 40+ directory components are actually used
+- Some components might be work-in-progress or abandoned
+
+## 📁 Current Directory Structure Issues Summary
+
+1. **Root Level Confusion**: Backend inside frontend folder
+2. **Config Files Scattered**: Firebase configs at root level
+3. **Component Over-proliferation**: 40+ components in directory folder alone
+4. **Inconsistent Naming**: Adviser vs Advisor
+5. **Security Files Exposed**: serviceAccountKey.json should not be tracked
+6. **No Clear Feature Organization**: Components grouped by type rather than feature
+
+## 📁 Proposed Reorganized Directory Structure
+
+```
+mylocalria/
+├── .gitignore (updated to exclude sensitive files)
+├── .env.example
+├── README.md (main project documentation)
+├── package.json
+├── package-lock.json
+│
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   ├── postcss.config.cjs
+│   ├── eslint.config.js
+│   ├── index.html
+│   │
+│   ├── public/
+│   │   ├── favicon.svg
+│   │   ├── sitemap.xml
+│   │   └── assets/
+│   │       ├── google-logo.svg
+│   │       ├── microsoft-logo.svg
+│   │       └── vite.svg
+│   │
+│   ├── src/
+│   │   ├── main.jsx
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── index.css
+│   │   │
+│   │   ├── config/
+│   │   │   ├── firebase.js
+│   │   │   ├── firebase.json
+│   │   │   ├── cors.json
+│   │   │   └── constants.js
+│   │   │
+│   │   ├── features/
+│   │   │   ├── auth/
+│   │   │   │   ├── contexts/
+│   │   │   │   │   └── AuthContext.jsx
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── AdminRoute.jsx
+│   │   │   │   │   ├── PrivateRoute.jsx
+│   │   │   │   │   └── ProtectedRoute.jsx
+│   │   │   │   ├── pages/
+│   │   │   │   │   ├── Login.jsx
+│   │   │   │   │   ├── Register.jsx
+│   │   │   │   │   └── FirebaseAuthAction.jsx
+│   │   │   │   └── services/
+│   │   │   │       └── authService.js
+│   │   │   │
+│   │   │   ├── advisors/
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── AdvisorCard.jsx
+│   │   │   │   │   ├── AdvisorQuickView.jsx
+│   │   │   │   │   ├── AdvisorLocationMap.jsx
+│   │   │   │   │   ├── AdvisorComparison.jsx
+│   │   │   │   │   ├── SimilarAdvisors.jsx
+│   │   │   │   │   ├── FeaturedAdvisors.jsx
+│   │   │   │   │   ├── RecentlyViewedAdvisors.jsx
+│   │   │   │   │   ├── TopRatedRIAsBox.jsx
+│   │   │   │   │   └── MessageAdvisorModal.jsx
+│   │   │   │   ├── pages/
+│   │   │   │   │   ├── AdvisorProfile.jsx (renamed from both AdviserProfile.jsx)
+│   │   │   │   │   ├── AdvisorRegistration.jsx
+│   │   │   │   │   └── AdvisorEditModal.jsx
+│   │   │   │   └── utils/
+│   │   │   │       └── advisorFormatters.js
+│   │   │   │
+│   │   │   ├── search/
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── SearchBar/
+│   │   │   │   │   │   ├── SearchBar.jsx
+│   │   │   │   │   │   ├── SearchSuggestions.jsx
+│   │   │   │   │   │   └── LandingSearchBar.jsx
+│   │   │   │   │   ├── SearchFilters/
+│   │   │   │   │   │   ├── SearchFilters.jsx (consolidated)
+│   │   │   │   │   │   ├── FilterTags.jsx
+│   │   │   │   │   │   ├── SearchFilterPresets.jsx
+│   │   │   │   │   │   └── SortOptions.jsx
+│   │   │   │   │   ├── SearchResults/
+│   │   │   │   │   │   ├── SearchResultsList.jsx
+│   │   │   │   │   │   ├── SearchResultsMap.jsx
+│   │   │   │   │   │   ├── SearchResultsSummary.jsx
+│   │   │   │   │   │   └── SearchResultsExport.jsx (consolidated)
+│   │   │   │   │   └── SearchUtilities/
+│   │   │   │   │       ├── SearchHistory.jsx
+│   │   │   │   │       ├── SavedSearches.jsx
+│   │   │   │   │       ├── SearchBookmarks.jsx
+│   │   │   │   │       ├── PopularSearches.jsx
+│   │   │   │   │       └── SearchTips.jsx
+│   │   │   │   ├── pages/
+│   │   │   │   │   └── Directory.jsx
+│   │   │   │   └── hooks/
+│   │   │   │       └── useSearch.js
+│   │   │   │
+│   │   │   ├── reviews/
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── ReviewCard.jsx
+│   │   │   │   │   ├── ReviewList.jsx
+│   │   │   │   │   ├── ReviewManagement.jsx
+│   │   │   │   │   └── WriteReviewModal.jsx
+│   │   │   │   ├── pages/
+│   │   │   │   │   └── WriteReview.jsx
+│   │   │   │   └── services/
+│   │   │   │       └── reviewService.js
+│   │   │   │
+│   │   │   ├── dashboard/
+│   │   │   │   ├── pages/
+│   │   │   │   │   ├── Dashboard.jsx
+│   │   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   │   └── AdminReviewVerification.jsx
+│   │   │   │   └── components/
+│   │   │   │       └── DashboardStats.jsx
+│   │   │   │
+│   │   │   ├── profile/
+│   │   │   │   └── pages/
+│   │   │   │       └── Profile.jsx
+│   │   │   │
+│   │   │   └── notifications/
+│   │   │       ├── components/
+│   │   │       │   └── NotificationCenter.jsx
+│   │   │       └── services/
+│   │   │           └── notificationService.js
+│   │   │
+│   │   ├── shared/
+│   │   │   ├── components/
+│   │   │   │   ├── common/
+│   │   │   │   │   ├── LoadingSpinner.jsx
+│   │   │   │   │   ├── StarRating.jsx
+│   │   │   │   │   ├── ProfileCard.jsx
+│   │   │   │   │   ├── SocialIcons.jsx
+│   │   │   │   │   ├── AddressAutocomplete.jsx
+│   │   │   │   │   ├── RatingDistributionChart.jsx
+│   │   │   │   │   └── ReviewTrendsChart.jsx
+│   │   │   │   └── layout/
+│   │   │   │       ├── Layout.jsx
+│   │   │   │       ├── Header.jsx
+│   │   │   │       └── Footer.jsx
+│   │   │   ├── hooks/
+│   │   │   │   └── useDebounce.js
+│   │   │   ├── utils/
+│   │   │   │   ├── cropImage.js
+│   │   │   │   ├── mergeAdvisorData.js
+│   │   │   │   └── formatters.js
+│   │   │   └── services/
+│   │   │       ├── fileUploadService.js
+│   │   │       └── geolocationService.js
+│   │   │
+│   │   ├── data/
+│   │   │   ├── constants/
+│   │   │   │   ├── custodianMapping.js
+│   │   │   │   ├── professionalDesignationsMap.js
+│   │   │   │   ├── waAreaCityMap.js
+│   │   │   │   └── waCities.js
+│   │   │   └── mappings/
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Landing.jsx
+│   │   │   └── NotFound.jsx
+│   │   │
+│   │   └── assets/
+│   │       └── react.svg
+│   │
+│   └── tests/
+│       ├── unit/
+│       ├── integration/
+│       └── e2e/
+│
+├── backend/
+│   ├── package.json
+│   ├── README.md
+│   ├── index.js
+│   ├── types.d.ts
+│   │
+│   ├── config/
+│   │   └── serviceAccountKey.example.json
+│   │
+│   ├── src/
+│   │   ├── routes/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   └── utils/
+│   │
+│   └── tests/
+│       ├── api.test.js
+│       ├── api-test-script.js
+│       ├── generate-test-token.js
+│       ├── MyLocalRIA-Backend-API.postman_collection.json
+│       └── TESTING_GUIDE.md
+│
+├── docs/
+│   ├── README.md
+│   ├── architecture/
+│   │   ├── Technical_Architecture_Plan.md
+│   │   └── FirestoreSchemaReference.md
+│   ├── specifications/
+│   │   └── Project_Specifications.md
+│   ├── development/
+│   │   ├── AGENT_TRACKER.md
+│   │   ├── MyLocalRIA_Cursor_Background_Agents.md
+│   │   └── IMPLEMENTATION_SUMMARY.md
+│   └── mappings/
+│       ├── AreaCityMapping.md
+│       ├── CustodianMapping.md
+│       └── ProfessionalDesignationsMapping.md
+│
+├── scripts/
+│   └── generate-sitemap.cjs
+│
+└── .env.example
+```
+
+## 🔄 Key Changes in Reorganization
+
+### 1. **Feature-Based Organization**
+- Moved from type-based (`components/`, `pages/`) to feature-based organization
+- Each feature has its own `components/`, `pages/`, `services/`, and `utils/`
+- Makes it easier to find related code and maintain features independently
+
+### 2. **Consolidation of Components**
+- Merged 40+ directory components into logical groups:
+  - SearchBar components (3 files)
+  - SearchFilters components (4 files)
+  - SearchResults components (4 files)
+  - SearchUtilities components (5 files)
+- Removed apparent duplicates and redundant components
+
+### 3. **Clear Separation of Concerns**
+- Frontend and backend are clearly separated at root level
+- Config files moved to appropriate config directories
+- Sensitive files (serviceAccountKey.json) moved out of version control
+
+### 4. **Standardized Naming**
+- All "Adviser" references changed to "Advisor" for consistency
+- File names follow consistent camelCase convention
+
+### 5. **Improved Documentation Structure**
+- All docs consolidated in `/docs` directory
+- Organized by type: architecture, specifications, development, mappings
+- Converted non-standard formats (RTF, TXT) to Markdown
+
+### 6. **Security Improvements**
+- Added `.env.example` for environment variables
+- Moved sensitive configs out of repository
+- serviceAccountKey.json → serviceAccountKey.example.json
+
+### 7. **Test Organization**
+- Frontend tests in `frontend/tests/`
+- Backend tests in `backend/tests/`
+- Organized by type: unit, integration, e2e
+
+## 📋 Detailed Migration Plan
+
+### Phase 1: Directory Structure Creation
+```bash
+# Create new directory structure
+mkdir -p mylocalria/{frontend,backend,docs,scripts}
+mkdir -p mylocalria/frontend/{public/assets,src/{config,features,shared,data,pages,assets},tests/{unit,integration,e2e}}
+mkdir -p mylocalria/frontend/src/features/{auth,advisors,search,reviews,dashboard,profile,notifications}/{components,pages,services,utils,hooks,contexts}
+mkdir -p mylocalria/frontend/src/shared/{components/{common,layout},hooks,utils,services}
+mkdir -p mylocalria/frontend/src/data/{constants,mappings}
+mkdir -p mylocalria/backend/{config,src/{routes,controllers,services,utils},tests}
+mkdir -p mylocalria/docs/{architecture,specifications,development,mappings}
+```
+
+### Phase 2: File Moves and Renames
+
+#### 2.1 Root Level Moves
+- `frontend/` → `mylocalria/frontend/` (entire directory)
+- `backend/` → `mylocalria/backend/` (if it exists separately)
+- Create `mylocalria/.gitignore` (updated)
+- Create `mylocalria/.env.example`
+- Create `mylocalria/README.md` (main project doc)
+
+#### 2.2 Frontend Config Moves
+- `firebase.json` → `mylocalria/frontend/src/config/firebase.json`
+- `cors.json` → `mylocalria/frontend/src/config/cors.json`
+- `src/firebase.js` → `mylocalria/frontend/src/config/firebase.js`
+- `serviceAccountKey.json` → DELETE (add to .gitignore)
+- Create `mylocalria/frontend/src/config/constants.js`
+
+#### 2.3 Auth Feature Moves
+- `src/contexts/AuthContext.jsx` → `mylocalria/frontend/src/features/auth/contexts/AuthContext.jsx`
+- `src/components/auth/AdminRoute.jsx` → `mylocalria/frontend/src/features/auth/components/AdminRoute.jsx`
+- `src/components/auth/PrivateRoute.jsx` → `mylocalria/frontend/src/features/auth/components/PrivateRoute.jsx`
+- `src/components/auth/ProtectedRoute.jsx` → `mylocalria/frontend/src/features/auth/components/ProtectedRoute.jsx`
+- `src/pages/Login.jsx` → `mylocalria/frontend/src/features/auth/pages/Login.jsx`
+- `src/pages/Register.jsx` → `mylocalria/frontend/src/features/auth/pages/Register.jsx`
+- `src/pages/FirebaseAuthAction.jsx` → `mylocalria/frontend/src/features/auth/pages/FirebaseAuthAction.jsx`
+
+#### 2.4 Advisor Feature Moves
+- `src/components/advisors/AdvisorCard.jsx` → `mylocalria/frontend/src/features/advisors/components/AdvisorCard.jsx`
+- `src/components/advisors/TopRatedRIAsBox.jsx` → `mylocalria/frontend/src/features/advisors/components/TopRatedRIAsBox.jsx`
+- `src/components/directory/AdvisorQuickView.jsx` → `mylocalria/frontend/src/features/advisors/components/AdvisorQuickView.jsx`
+- `src/components/directory/AdvisorLocationMap.jsx` → `mylocalria/frontend/src/features/advisors/components/AdvisorLocationMap.jsx`
+- `src/components/directory/AdvisorComparison.jsx` → `mylocalria/frontend/src/features/advisors/components/AdvisorComparison.jsx`
+- `src/components/directory/MessageAdvisorModal.jsx` → `mylocalria/frontend/src/features/advisors/components/MessageAdvisorModal.jsx`
+- `src/components/directory/SimilarAdvisors.jsx` → `mylocalria/frontend/src/features/advisors/components/SimilarAdvisors.jsx`
+- `src/components/directory/FeaturedAdvisors.jsx` → `mylocalria/frontend/src/features/advisors/components/FeaturedAdvisors.jsx`
+- `src/components/directory/RecentlyViewedAdvisors.jsx` → `mylocalria/frontend/src/features/advisors/components/RecentlyViewedAdvisors.jsx`
+- `src/components/directory/AdvisorEditModal.jsx` → `mylocalria/frontend/src/features/advisors/pages/AdvisorEditModal.jsx`
+- `src/pages/AdvisorProfile.jsx` → `mylocalria/frontend/src/features/advisors/pages/AdvisorProfile.jsx`
+- `src/AdviserProfile.jsx` → DELETE (duplicate, use AdvisorProfile.jsx)
+- `src/pages/AdvisorRegistration.jsx` → `mylocalria/frontend/src/features/advisors/pages/AdvisorRegistration.jsx`
+- `src/utils/advisorFormatters.js` → `mylocalria/frontend/src/features/advisors/utils/advisorFormatters.js`
+
+#### 2.5 Search Feature Consolidation
+**SearchBar Components:**
+- `src/components/directory/LandingSearchBar.jsx` → `mylocalria/frontend/src/features/search/components/SearchBar/LandingSearchBar.jsx`
+- `src/components/directory/SearchSuggestions.jsx` → `mylocalria/frontend/src/features/search/components/SearchBar/SearchSuggestions.jsx`
+- Create `mylocalria/frontend/src/features/search/components/SearchBar/SearchBar.jsx`
+
+**SearchFilters Components:**
+- `src/components/directory/SearchFilters.jsx` → `mylocalria/frontend/src/features/search/components/SearchFilters/SearchFilters.jsx`
+- `src/components/directory/FilterTags.jsx` → `mylocalria/frontend/src/features/search/components/SearchFilters/FilterTags.jsx`
+- `src/components/directory/SearchFilterPresets.jsx` → `mylocalria/frontend/src/features/search/components/SearchFilters/SearchFilterPresets.jsx`
+- `src/components/directory/SortOptions.jsx` → `mylocalria/frontend/src/features/search/components/SearchFilters/SortOptions.jsx`
+- DELETE `src/components/search/SearchFilters.jsx` (duplicate)
+
+**SearchResults Components (Consolidate 7+ into 4):**
+- `src/components/directory/SearchResultsMap.jsx` → `mylocalria/frontend/src/features/search/components/SearchResults/SearchResultsMap.jsx`
+- `src/components/directory/SearchResultsSummary.jsx` → `mylocalria/frontend/src/features/search/components/SearchResults/SearchResultsSummary.jsx`
+- Merge `SearchExport.jsx` + `SearchResultsExport.jsx` → `mylocalria/frontend/src/features/search/components/SearchResults/SearchResultsExport.jsx`
+- Create `mylocalria/frontend/src/features/search/components/SearchResults/SearchResultsList.jsx`
+- DELETE redundant: `SearchResultsComparison.jsx`, `SearchResultsTimeline.jsx`, `SearchResultsCalendar.jsx`, `SearchResultsReviews.jsx`, `SearchResultsAnalytics.jsx`
+
+**SearchUtilities Components:**
+- `src/components/directory/SearchHistory.jsx` → `mylocalria/frontend/src/features/search/components/SearchUtilities/SearchHistory.jsx`
+- `src/components/directory/SavedSearches.jsx` → `mylocalria/frontend/src/features/search/components/SearchUtilities/SavedSearches.jsx`
+- `src/components/directory/SearchBookmarks.jsx` → `mylocalria/frontend/src/features/search/components/SearchUtilities/SearchBookmarks.jsx`
+- `src/components/directory/PopularSearches.jsx` → `mylocalria/frontend/src/features/search/components/SearchUtilities/PopularSearches.jsx`
+- `src/components/directory/SearchTips.jsx` → `mylocalria/frontend/src/features/search/components/SearchUtilities/SearchTips.jsx`
+
+**Search Pages:**
+- `src/pages/Directory.jsx` → `mylocalria/frontend/src/features/search/pages/Directory.jsx`
+
+**Components to DELETE (redundant/over-engineered):**
+- `SearchInsights.jsx`, `SearchAnalytics.jsx`, `SearchInsightsDashboard.jsx`
+- `SearchFeedback.jsx`, `SearchTrends.jsx`, `SearchNotifications.jsx`
+- `SearchComparison.jsx`, `SearchRecommendations.jsx`
+- `SearchFiltersHistory.jsx`, `SearchCollaboration.jsx`, `SearchPreferences.jsx`
+- `ShareSearchModal.jsx`, `SaveSearchModal.jsx` (keep one modal)
+
+#### 2.6 Review Feature Moves
+- `src/components/reviews/ReviewCard.jsx` → `mylocalria/frontend/src/features/reviews/components/ReviewCard.jsx`
+- `src/components/reviews/ReviewList.jsx` → `mylocalria/frontend/src/features/reviews/components/ReviewList.jsx`
+- `src/components/reviews/ReviewManagement.jsx` → `mylocalria/frontend/src/features/reviews/components/ReviewManagement.jsx`
+- `src/components/reviews/WriteReviewModal.jsx` → `mylocalria/frontend/src/features/reviews/components/WriteReviewModal.jsx`
+- `src/pages/WriteReview.jsx` → `mylocalria/frontend/src/features/reviews/pages/WriteReview.jsx`
+
+#### 2.7 Dashboard Feature Moves
+- `src/pages/Dashboard.jsx` → `mylocalria/frontend/src/features/dashboard/pages/Dashboard.jsx`
+- `src/pages/AdminDashboard.jsx` → `mylocalria/frontend/src/features/dashboard/pages/AdminDashboard.jsx`
+- `src/pages/AdminReviewVerification.jsx` → `mylocalria/frontend/src/features/dashboard/pages/AdminReviewVerification.jsx`
+
+#### 2.8 Profile Feature Moves
+- `src/pages/Profile.jsx` → `mylocalria/frontend/src/features/profile/pages/Profile.jsx`
+
+#### 2.9 Notification Feature Moves
+- `src/components/notifications/NotificationCenter.jsx` → `mylocalria/frontend/src/features/notifications/components/NotificationCenter.jsx`
+- `src/services/notificationService.js` → `mylocalria/frontend/src/features/notifications/services/notificationService.js`
+
+#### 2.10 Shared Components Moves
+- `src/components/common/*` → `mylocalria/frontend/src/shared/components/common/*`
+- `src/components/layout/*` → `mylocalria/frontend/src/shared/components/layout/*`
+- `src/services/fileUploadService.js` → `mylocalria/frontend/src/shared/services/fileUploadService.js`
+- `src/services/geolocationService.js` → `mylocalria/frontend/src/shared/services/geolocationService.js`
+- `src/utils/cropImage.js` → `mylocalria/frontend/src/shared/utils/cropImage.js`
+- `src/utils/mergeAdvisorData.js` → `mylocalria/frontend/src/shared/utils/mergeAdvisorData.js`
+
+#### 2.11 Data/Constants Moves
+- `src/utils/custodianMapping.js` → `mylocalria/frontend/src/data/constants/custodianMapping.js`
+- `src/utils/professionalDesignationsMap.js` → `mylocalria/frontend/src/data/constants/professionalDesignationsMap.js`
+- `src/utils/waAreaCityMap.js` → `mylocalria/frontend/src/data/constants/waAreaCityMap.js`
+- `src/utils/waCities.js` → `mylocalria/frontend/src/data/constants/waCities.js`
+
+#### 2.12 Root Pages Moves
+- `src/pages/Landing.jsx` → `mylocalria/frontend/src/pages/Landing.jsx`
+- `src/pages/NotFound.jsx` → `mylocalria/frontend/src/pages/NotFound.jsx`
+
+#### 2.13 Documentation Moves
+- `docs/*` → `mylocalria/docs/`
+- `docs/Technical Architecture Plan.txt` → `mylocalria/docs/architecture/Technical_Architecture_Plan.md`
+- `docs/Project Speficiations.txt` → `mylocalria/docs/specifications/Project_Specifications.md`
+- `docs/FirestoreSchemaReference.md` → `mylocalria/docs/architecture/FirestoreSchemaReference.md`
+- `docs/AGENT_TRACKER.md` → `mylocalria/docs/development/AGENT_TRACKER.md`
+- `backend/IMPLEMENTATION_SUMMARY.md` → `mylocalria/docs/development/IMPLEMENTATION_SUMMARY.md`
+- Convert RTF files to Markdown
+
+#### 2.14 Scripts Moves
+- `generate-sitemap.cjs` → `mylocalria/scripts/generate-sitemap.cjs`
+
+#### 2.15 Backend Organization
+- Move all backend files from `frontend/backend/` → `mylocalria/backend/`
+- `backend/tests/*` → `mylocalria/backend/tests/*`
+
+### Phase 3: Import Path Updates
+
+All imports will need to be updated to reflect new paths. Examples:
+
+**Before:**
+```javascript
+import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import { db } from '../firebase';
+```
+
+**After:**
+```javascript
+import { useAuth } from '@/features/auth/contexts/AuthContext';
+import LoadingSpinner from '@/shared/components/common/LoadingSpinner';
+import { db } from '@/config/firebase';
+```
+
+### Phase 4: Configuration Updates
+
+1. Update `vite.config.js` to add path aliases:
+```javascript
+resolve: {
+  alias: {
+    '@': path.resolve(__dirname, './src'),
+  },
+},
+```
+
+2. Update `package.json` scripts to reflect new structure
+
+3. Create `.env.example` with all required environment variables
+
+4. Update `.gitignore` to include:
+- `serviceAccountKey.json`
+- `.env`
+- `node_modules/`
+- `dist/`
+
+### Phase 5: Final Cleanup
+
+1. Delete empty directories
+2. Run linter to fix any issues
+3. Update all README files
+4. Test all imports and functionality
+
+## 🎯 Summary
+
+### Benefits of This Reorganization
+
+1. **Better Code Organization**
+   - Feature-based structure makes it easier to find and maintain related code
+   - Clear separation between frontend and backend
+   - Reduced component duplication and over-engineering
+
+2. **Improved Developer Experience**
+   - Intuitive file paths with `@/` aliasing
+   - Consistent naming conventions (Advisor, not Adviser)
+   - Logical grouping of related functionality
+
+3. **Enhanced Security**
+   - Sensitive files removed from version control
+   - Proper `.gitignore` configuration
+   - Environment variables for configuration
+
+4. **Scalability**
+   - Feature-based structure scales better as the app grows
+   - Easy to add new features without cluttering existing directories
+   - Clear boundaries between different parts of the application
+
+5. **Reduced Complexity**
+   - Consolidated 40+ directory components into ~16 focused components
+   - Removed redundant and over-engineered components
+   - Simplified import paths
+
+### Files to be Deleted (23 files)
+- `src/AdviserProfile.jsx` (duplicate)
+- `src/components/search/SearchFilters.jsx` (duplicate)
+- 20+ over-engineered search components
+- `serviceAccountKey.json` (security risk)
+
+### New Files to be Created
+- `mylocalria/.gitignore`
+- `mylocalria/.env.example`
+- `mylocalria/README.md`
+- `mylocalria/frontend/src/config/constants.js`
+- `mylocalria/frontend/src/features/search/components/SearchBar/SearchBar.jsx`
+- `mylocalria/frontend/src/features/search/components/SearchResults/SearchResultsList.jsx`
+
+### Import Updates Required
+- Approximately 100+ import statements will need updating
+- All relative imports (`../`) will change to absolute imports (`@/`)
+- Firebase imports will change from `'../firebase'` to `'@/config/firebase'`
+
+## ⚠️ IMPORTANT: Next Steps
+
+**DO NOT PROCEED** with the actual file moves until you've:
+
+1. **Backed up your project** - Create a full backup before any changes
+2. **Committed current work** - Ensure all current changes are committed to git
+3. **Reviewed the plan** - Check if any critical files or functionality might be affected
+4. **Tested the current state** - Ensure the app is working before reorganization
+
+Once you're ready to proceed, the reorganization should be done in phases:
+1. Create new directory structure
+2. Move files according to the plan
+3. Update all import paths
+4. Test thoroughly
+5. Clean up old/empty directories
+
+## 📊 Statistics
+
+- **Total files to move**: ~85 files
+- **Files to delete**: 23 files
+- **New files to create**: 6 files
+- **Estimated time**: 2-4 hours for full reorganization
+- **Risk level**: Medium (due to extensive import changes)
+
+---
+
+Log completed on: ${new Date().toISOString()}
