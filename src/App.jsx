@@ -1,24 +1,24 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import Layout from './components/layout/Layout';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import { AdminRoute } from './components/auth/AdminRoute';
-import RouteTransition from './components/common/RouteTransition';
-import PrivateRoute from './components/auth/PrivateRoute';
+import { AuthProvider } from './features/auth/contexts/AuthContext';
+import Layout from './shared/components/layout/Layout';
+import ProtectedRoute from './features/auth/components/ProtectedRoute';
+import { AdminRoute } from './features/auth/components/AdminRoute';
+import RouteTransition from './shared/components/common/RouteTransition';
+import PrivateRoute from './features/auth/components/PrivateRoute';
 
 // Pages
 import Landing from './pages/Landing';
-import Directory from './pages/Directory';
-import AdvisorProfile from './pages/AdvisorProfile';
-import WriteReview from './pages/WriteReview';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import AdminDashboard from './pages/AdminDashboard';
+import Directory from './features/search/pages/Directory';
+import AdvisorProfile from './features/advisors/pages/AdvisorProfile';
+import WriteReview from './features/reviews/pages/WriteReview';
+import Login from './features/auth/pages/Login';
+import Register from './features/auth/pages/Register';
+import Dashboard from './features/dashboard/pages/Dashboard';
+import Profile from './features/profile/pages/Profile';
+import AdminDashboard from './features/dashboard/pages/AdminDashboard';
 import NotFound from './pages/NotFound';
-import AdvisorRegistration from './pages/AdvisorRegistration';
-import FirebaseAuthAction from './pages/FirebaseAuthAction';
+import AdvisorRegistration from './features/advisors/pages/AdvisorRegistration';
+import FirebaseAuthAction from './features/auth/pages/FirebaseAuthAction';
 
 function App() {
   return (

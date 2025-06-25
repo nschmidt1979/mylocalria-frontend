@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
-import AdvisorCard from '../components/advisors/AdvisorCard';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { db } from '../config/firebase';
+import AdvisorCard from '../features/advisors/components/AdvisorCard';
+import LoadingSpinner from '../shared/components/common/LoadingSpinner';
 
 const Landing = () => {
   const [featuredAdvisors, setFeaturedAdvisors] = useState([]);
